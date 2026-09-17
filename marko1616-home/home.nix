@@ -1,6 +1,6 @@
 { config, pkgs, ... }:
 {
-  imports = [  ];
+  imports = [ ./desktop_enviroment.nix ./zsh.nix ./btop.nix ];
 
   # Basic stuff
   home.username = "marko1616";
@@ -24,12 +24,4 @@
     xwayland-satellite
     wl-clipboard
   ];
-
-  # Config files
-  xdg.configFile."niri/config.kdl".source = ../assets/config/niri/config.kdl;
-  xdg.configFile."kitty/kitty.conf".source = ../assets/config/kitty/kitty.conf;
-  xdg.configFile."waybar/config".source = ../assets/config/waybar/config;
-  xdg.configFile."waybar/style.css".source = ../assets/config/waybar/style.css;
-  xdg.configFile."fuzzel/fuzzel.ini".source = ../assets/config/fuzzel/fuzzel.ini;
-  xdg.configFile."btop/btop.conf".source = ../assets/config/btop/btop.conf;
 }

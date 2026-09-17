@@ -72,6 +72,7 @@ in
 
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users."marko1616" = {
+    shell = pkgs.zsh;
     isNormalUser = true;
     description = "marko1616";
     extraGroups = [ "networkmanager" "wheel" ];
@@ -104,6 +105,7 @@ in
     git
     curl
     tmux
+    appimage-run
     # sddm theme
     (pkgs.stdenv.mkDerivation {
       name = "pixie-sddm";
@@ -134,6 +136,14 @@ in
     pkgs.kdePackages.qtsvg
     pkgs.kdePackages.qt5compat # Included for wider QML component compatibility
   ];
+
+  programs.zsh = {
+    enable = true;
+    # Oh My Zsh initializes completion through Home Manager.
+    enableGlobalCompInit = false;
+    # Oh My Zsh supplies the prompt.
+    promptInit = "";
+  };
 
   # Some programs need SUID wrappers, can be configured further or are
   # started in user sessions.
