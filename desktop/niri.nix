@@ -10,6 +10,8 @@
 
     # Fix for NixOS explicitly requiring a cursor theme
     settings = {
+      # Make sure changes will apply
+      General.GreeterEnvironment = "QML_DISABLE_DISK_CACHE=1";
       Theme = {
         CursorTheme = "breeze_cursors"; # Change this if you use a different cursor theme (e.g., Adwaita)
       };

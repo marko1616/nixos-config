@@ -113,10 +113,22 @@ in
         rev = "main";
         hash = "sha256-wV5XnU+4ME1HZAsGad+Lb+zTCqryn0WWo75FaoOFefc=";
       };
-      installPhase = "
-        mkdir -p $out/share/sddm/themes/pixie
-        cp -r * $out/share/sddm/themes/pixie/
-      ";
+      postPatch = ''
+      substituteInPlace components/Clock.qml \
+        --replace-fail 'spacing: -130' 'spacing: -60' \
+	--replace-fail 'spacing: 0' 'spacing: -40'
+      '';
+      installPhase = ''
+          runHook preInstall
+          themeDir="$out/share/sddm/themes/pixie"
+          mkdir -p "$themeDir"
+          cp -r * "$themeDir/"
+          install -m644 ${./assets/config/sddm/theme.conf} \
+            "$themeDir/theme.conf"
+          install -m644 ${./assets/login-background/65475029_p0.jpg} \
+            "$themeDir/assets/desktop.jpg"
+          runHook postInstall
+      '';
     })
     pkgs.kdePackages.qtdeclarative
     pkgs.kdePackages.qtsvg
