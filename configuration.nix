@@ -34,7 +34,7 @@ in
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
 
   # Configure network proxy if necessary
-  # networking.proxy.default = "http://user:password@proxy:port/";
+  # networking.proxy.default = "http://127.0.0.1:10808";
   # networking.proxy.noProxy = "127.0.0.1,localhost,internal.domain";
 
   # Enable networking
@@ -104,6 +104,23 @@ in
     git
     curl
     tmux
+    # sddm theme
+    (pkgs.stdenv.mkDerivation {
+      name = "pixie-sddm";
+      src = pkgs.fetchFromGitHub {
+        owner = "xCaptaiN09";
+        repo = "pixie-sddm";
+        rev = "main";
+        hash = "sha256-wV5XnU+4ME1HZAsGad+Lb+zTCqryn0WWo75FaoOFefc=";
+      };
+      installPhase = "
+        mkdir -p $out/share/sddm/themes/pixie
+        cp -r * $out/share/sddm/themes/pixie/
+      ";
+    })
+    pkgs.kdePackages.qtdeclarative
+    pkgs.kdePackages.qtsvg
+    pkgs.kdePackages.qt5compat # Included for wider QML component compatibility
   ];
 
   # Some programs need SUID wrappers, can be configured further or are
