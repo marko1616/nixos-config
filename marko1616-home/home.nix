@@ -1,6 +1,6 @@
 { config, pkgs, ... }:
 {
-  imports = [ ./desktop_enviroment.nix ./zsh.nix ./btop.nix ];
+  imports = [ ./desktop_enviroment.nix ./zsh.nix ./btop.nix ./qq.nix ];
 
   # Basic stuff
   home.username = "marko1616";
