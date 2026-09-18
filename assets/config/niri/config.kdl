@@ -398,6 +398,9 @@ window-rule {
 // Kitty
 window-rule {
     match app-id="kitty"
+    background-effect {
+        blur false
+    }
     draw-border-with-background false
     default-column-width { proportion 0.4; }
 }
