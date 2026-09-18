@@ -1,0 +1,51 @@
+[submodule "assets/plugins/nvim/lazy.nvim"]
+	path = assets/plugins/nvim/lazy.nvim
+	url = https://github.com/folke/lazy.nvim.git
+[submodule "assets/plugins/nvim/tokyonight.nvim"]
+	path = assets/plugins/nvim/tokyonight.nvim
+	url = https://github.com/folke/tokyonight.nvim.git
+[submodule "assets/plugins/nvim/lualine.nvim"]
+	path = assets/plugins/nvim/lualine.nvim
+	url = https://github.com/nvim-lualine/lualine.nvim.git
+[submodule "assets/plugins/nvim/nvim-web-devicons"]
+	path = assets/plugins/nvim/nvim-web-devicons
+	url = https://github.com/nvim-tree/nvim-web-devicons.git
+[submodule "assets/plugins/nvim/telescope.nvim"]
+	path = assets/plugins/nvim/telescope.nvim
+	url = https://github.com/nvim-telescope/telescope.nvim.git
+[submodule "assets/plugins/nvim/plenary.nvim"]
+	path = assets/plugins/nvim/plenary.nvim
+	url = https://github.com/nvim-lua/plenary.nvim.git
+[submodule "assets/plugins/nvim/oil.nvim"]
+	path = assets/plugins/nvim/oil.nvim
+	url = https://github.com/stevearc/oil.nvim.git
+[submodule "assets/plugins/nvim/nvim-cmp"]
+	path = assets/plugins/nvim/nvim-cmp
+	url = https://github.com/hrsh7th/nvim-cmp.git
+[submodule "assets/plugins/nvim/cmp-nvim-lsp"]
+	path = assets/plugins/nvim/cmp-nvim-lsp
+	url = https://github.com/hrsh7th/cmp-nvim-lsp.git
+[submodule "assets/plugins/nvim/nvim-lspconfig"]
+	path = assets/plugins/nvim/nvim-lspconfig
+	url = https://github.com/neovim/nvim-lspconfig.git
+[submodule "assets/plugins/nvim/LuaSnip"]
+	path = assets/plugins/nvim/LuaSnip
+	url = https://github.com/L3MON4D3/LuaSnip.git
+[submodule "assets/plugins/nvim/cmp_luasnip"]
+	path = assets/plugins/nvim/cmp_luasnip
+	url = https://github.com/saadparwaiz1/cmp_luasnip.git
+[submodule "assets/plugins/nvim/conform.nvim"]
+	path = assets/plugins/nvim/conform.nvim
+	url = https://github.com/stevearc/conform.nvim.git
+[submodule "assets/plugins/nvim/gitsigns.nvim"]
+	path = assets/plugins/nvim/gitsigns.nvim
+	url = https://github.com/lewis6991/gitsigns.nvim.git
+[submodule "assets/plugins/nvim/which-key.nvim"]
+	path = assets/plugins/nvim/which-key.nvim
+	url = https://github.com/folke/which-key.nvim.git
+[submodule "assets/plugins/nvim/trouble.nvim"]
+	path = assets/plugins/nvim/trouble.nvim
+	url = https://github.com/folke/trouble.nvim.git
+[submodule "assets/plugins/nvim/nvim-treesitter"]
+	path = assets/plugins/nvim/nvim-treesitter
+	url = https://github.com/nvim-treesitter/nvim-treesitter.git
