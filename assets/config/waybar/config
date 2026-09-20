@@ -35,7 +35,9 @@
     "network": {
         "tooltip": false,
         "format-wifi": "  {essid}",
-        "format-ethernet": "󰈀 {ifname} | {bandwidthUpBytes} {bandwidthDownBytes}"
+        "format-ethernet": "󰈀 {ifname} | {bandwidthUpBytes} {bandwidthDownBytes}",
+        "format-disconnected": "  Disconnected",
+        "on-click": "networkmanager_dmenu"
     },
     "backlight": {
         "tooltip": false,
@@ -87,7 +89,7 @@
         "tooltip-format-connected": "{controller_alias}\t{controller_address}\n\n{num_connections} connected\n\n{device_enumerate}",
         "tooltip-format-enumerate-connected": "{device_alias}\t{device_address}",
         "tooltip-format-enumerate-connected-battery": "{device_alias}\t{device_address}\t{device_battery_percentage}%",
-        "on-click": "blueman-manager"
+        "on-click": "bzmenu --launcher fuzzel"
     },
     "custom/launcher": {
         "format": "∞",

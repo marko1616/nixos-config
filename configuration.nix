@@ -42,6 +42,9 @@ in
   # Enable networking
   networking.networkmanager.enable = true;
 
+  # Bluetooth
+  hardware.bluetooth.enable = true;
+
   # Set your time zone.
   time.timeZone = "Asia/Hong_Kong";
 
@@ -114,6 +117,7 @@ in
     tmux
     appimage-run
     sddm-theme
+    libnotify # For testing notify system
     kdePackages.qtdeclarative
     kdePackages.qtsvg
     kdePackages.qt5compat # Included for wider QML component compatibility

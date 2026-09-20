@@ -350,7 +350,7 @@ animations {
     // including after the touchpad gesture.
     workspace-switch {
         // off
-        // spring damping-ratio=1.0 stiffness=1000 epsilon=0.0001
+        spring damping-ratio=1.0 stiffness=1000 epsilon=0.0001
     }
 
     // All horizontal camera view movement:
@@ -360,7 +360,7 @@ animations {
     // - And so on.
     horizontal-view-movement {
         // off
-        // spring damping-ratio=1.0 stiffness=800 epsilon=0.0001
+        spring damping-ratio=1.0 stiffness=800 epsilon=0.0001
     }
 
     // Window opening animation. Note that this one has different defaults.
@@ -370,14 +370,14 @@ animations {
         // curve "ease-out-expo"
 
         // Example for a slightly bouncy window opening:
-        // spring damping-ratio=0.8 stiffness=1000 epsilon=0.0001
+        spring damping-ratio=0.8 stiffness=1000 epsilon=0.0001
     }
 
     // Config parse error and new default config creation notification
     // open/close animation.
     config-notification-open-close {
         // off
-        // spring damping-ratio=0.6 stiffness=1000 epsilon=0.001
+        spring damping-ratio=0.6 stiffness=1000 epsilon=0.001
     }
 }
 
@@ -399,7 +399,7 @@ window-rule {
 window-rule {
     match app-id="kitty"
     background-effect {
-        blur false
+        blur false 
     }
     draw-border-with-background false
     default-column-width { proportion 0.4; }

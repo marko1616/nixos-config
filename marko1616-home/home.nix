@@ -23,5 +23,7 @@
     awww
     xwayland-satellite
     wl-clipboard
+    bzmenu
+    networkmanager_dmenu
   ];
 }
