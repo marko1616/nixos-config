@@ -5,6 +5,7 @@
 { config, pkgs, ... }:
 let
   home-manager = builtins.fetchTarball "https://github.com/nix-community/home-manager/archive/release-26.05.tar.gz";
+  sddm-theme = pkgs.callPackage ./desktop/sddm-theme.nix { }; 
 in
 {
   imports =
@@ -12,6 +13,7 @@ in
       "${home-manager}/nixos"
       ./hardware-configuration.nix # Include the results of the hardware scan.
       ./desktop/niri.nix
+      ./desktop/sddm-avatars.nix
     ];
 
   # Experimental features
@@ -100,6 +102,8 @@ in
   environment.systemPackages = with pkgs; [
     unzip
     zsh
+    file
+    xxd
     neovim
     fastfetch
     nmap
@@ -109,35 +113,10 @@ in
     curl
     tmux
     appimage-run
-    # sddm theme
-    (pkgs.stdenv.mkDerivation {
-      name = "pixie-sddm";
-      src = pkgs.fetchFromGitHub {
-        owner = "xCaptaiN09";
-        repo = "pixie-sddm";
-        rev = "main";
-        hash = "sha256-wV5XnU+4ME1HZAsGad+Lb+zTCqryn0WWo75FaoOFefc=";
-      };
-      postPatch = ''
-      substituteInPlace components/Clock.qml \
-        --replace-fail 'spacing: -130' 'spacing: -60' \
-	--replace-fail 'spacing: 0' 'spacing: -40'
-      '';
-      installPhase = ''
-          runHook preInstall
-          themeDir="$out/share/sddm/themes/pixie"
-          mkdir -p "$themeDir"
-          cp -r * "$themeDir/"
-          install -m644 ${./assets/config/sddm/theme.conf} \
-            "$themeDir/theme.conf"
-          install -m644 ${./assets/login-background/65475029_p0.jpg} \
-            "$themeDir/assets/desktop.jpg"
-          runHook postInstall
-      '';
-    })
-    pkgs.kdePackages.qtdeclarative
-    pkgs.kdePackages.qtsvg
-    pkgs.kdePackages.qt5compat # Included for wider QML component compatibility
+    sddm-theme
+    kdePackages.qtdeclarative
+    kdePackages.qtsvg
+    kdePackages.qt5compat # Included for wider QML component compatibility
   ];
 
   programs.zsh = {
