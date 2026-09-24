@@ -121,6 +121,8 @@ in
     kdePackages.qtdeclarative
     kdePackages.qtsvg
     kdePackages.qt5compat # Included for wider QML component compatibility
+    obs-studio
+    vlc
   ];
 
   programs.zsh = {

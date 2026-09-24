@@ -10,7 +10,7 @@
 
   # Niri utils
   programs.kitty.enable = true;
-  programs.fuzzel.enable = true;
+  programs.wofi.enable = true;
   programs.waybar.enable = true;
   programs.swaylock.enable = true;
 

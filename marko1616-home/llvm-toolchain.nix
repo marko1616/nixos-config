@@ -4,5 +4,6 @@
     clang
     clang-tools
     lld
+    lldb
   ];
 }

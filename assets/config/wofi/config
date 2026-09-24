@@ -1,0 +1,13 @@
+show=drun
+normal_window=true
+width=420
+lines=15
+prompt=>
+matching=fuzzy
+insensitive=true
+allow_images=true
+image_size=16
+no_actions=true
+hide_scroll=true
+close_on_focus_loss=true
+use_search_box=false
