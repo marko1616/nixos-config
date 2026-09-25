@@ -6,7 +6,9 @@ Niri 桌面与 Home Manager 配置，使用 Flake 固定依赖。真实主机配
 
 ## 桌面环境
 
-Niri、SDDM / Pixie、Waybar、Wofi、Kitty、Mako，采用 Tokyo Night 配色。
+Niri、SDDM / Pixie、QuickShell（marko-shell 顶栏）、Wofi、Kitty、Mako，采用 Tokyo Night 配色。
+
+顶栏为 `assets/config/quickshell/marko-shell/` 中的 QuickShell 配置，安装到 `~/.config/quickshell/marko-shell`。
 
 ## 工具
 

@@ -6,7 +6,9 @@ A Niri desktop and Home Manager configuration with Flake inputs. Machine setting
 
 ## Desktop
 
-Niri, SDDM / Pixie, Waybar, Wofi, Kitty and Mako with Tokyo Night colors.
+Niri, SDDM / Pixie, QuickShell (marko-shell bar), Wofi, Kitty and Mako with Tokyo Night colors.
+
+The bar is the QuickShell configuration in `assets/config/quickshell/marko-shell/`, installed to `~/.config/quickshell/marko-shell`.
 
 ## Tools
 
