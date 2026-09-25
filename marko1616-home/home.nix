@@ -19,5 +19,7 @@
     wl-clipboard
     bzmenu
     networkmanager_dmenu
+    quickshell
+    networkmanagerapplet # Provides nm-connection-editor for Advanced settings.
   ];
 }

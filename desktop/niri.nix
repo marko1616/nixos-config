@@ -1,6 +1,11 @@
 { config, pkgs, ...}:
 {
   programs.niri.enable = true;
+
+  # Battery status and power-profile switching for the shell bar.
+  services.upower.enable = true;
+  services.power-profiles-daemon.enable = true;
+
   services.displayManager.sddm = {
     enable = true;
     theme = "pixie";

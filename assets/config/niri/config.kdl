@@ -267,8 +267,9 @@ layout {
 // which may be more convenient to use.
 // See the binds section below for more spawn examples.
 
-// This line starts waybar, a commonly used bar for Wayland compositors.
-spawn-at-startup "waybar"
+// Start the QuickShell bar (replaces waybar).
+// Force the Wayland Qt backend; without QT_QPA_PLATFORM Qt may pick xcb and fail to start.
+spawn-sh-at-startup "QT_QPA_PLATFORM=wayland qs -c marko-shell"
 // Wallpaper
 spawn-at-startup "awww-daemon"
 spawn-sh-at-startup "awww img \"${XDG_DATA_HOME:-$HOME/.local/share}/wallpapers/desktop.png\""
