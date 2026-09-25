@@ -1,11 +1,11 @@
-{ config, lib, ... }:
+{ config, lib, inputs, ... }:
 
 let
   settings =
     builtins.fromJSON
-      (builtins.readFile ../config/ssh/settings.json);
+      (builtins.readFile "${inputs.private-config}/ssh/settings.json");
 
-  keyFile = ../config/ssh/authorized_keys;
+  keyFile = "${inputs.private-config}/ssh/authorized_keys";
 
   keys = lib.filter
     (line: line != "" && !(lib.hasPrefix "#" line))

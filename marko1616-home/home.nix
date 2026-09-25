@@ -2,12 +2,6 @@
 {
   imports = [ ./desktop-enviroment.nix ./zsh.nix ./btop.nix ./nvim.nix ./python.nix ./llvm-toolchain.nix ./qq.nix ];
 
-  # Basic stuff
-  home.username = "marko1616";
-  home.homeDirectory = "/home/marko1616";
-
-  home.stateVersion = "26.05";
-
   # Niri utils
   programs.kitty.enable = true;
   programs.wofi.enable = true;

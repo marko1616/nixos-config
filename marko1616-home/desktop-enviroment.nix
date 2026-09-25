@@ -1,5 +1,8 @@
 { ... }:
 {
+  xdg.dataFile."wallpapers/desktop.png".source =
+    ../assets/wallpapers/148557481_p1.jpg;
+
   # Config
   xdg.configFile."niri/config.kdl".source = ../assets/config/niri/config.kdl;
   xdg.configFile."kitty/kitty.conf".source = ../assets/config/kitty/kitty.conf;

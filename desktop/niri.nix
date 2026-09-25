@@ -7,6 +7,7 @@
     # Crucial for Qt6: Use the KDE/Qt6 build of SDDM to fix missing cursors and module errors
     package = pkgs.kdePackages.sddm;
     wayland.enable = true;
+    extraPackages = with pkgs.kdePackages; [ qtsvg qtdeclarative qt5compat ];
 
     # Fix for NixOS explicitly requiring a cursor theme
     settings = {

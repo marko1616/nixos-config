@@ -1,2 +1,10 @@
-hardware-configuration.nix
-config/ssh
+# Local machine configuration, including backups made by the CLI.
+/private-config/
+/.private-*/
+# Retain exclusions for files from the legacy installation.
+/hardware-configuration.nix
+/config/ssh/
+/result
+/result-*
+__pycache__/
+*.pyc

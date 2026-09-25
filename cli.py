@@ -15,13 +15,8 @@ import tempfile
 import urllib.parse
 import urllib.request
 
-import questionary
-from rich.console import Console
-from rich.panel import Panel
-import typer
-
 ROOT = Path(__file__).resolve().parent
-SSH_DIR = ROOT / "config" / "ssh"
+SSH_DIR = ROOT / "private-config" / "ssh"
 QQ_SOURCE = ROOT / "config" / "qq-source.json"
 
 QQ_CONFIG_URLS = [
@@ -62,11 +57,13 @@ def write_file(path, content):
 
 def ensure_ssh_config():
     """Create local SSH configuration without overwriting existing files."""
+    if not (ROOT / "private-config" / "host.nix").is_file():
+        raise OSError("Initialize private-config/ first: python3 cli.py private init")
     SSH_DIR.mkdir(parents=True, exist_ok=True)
 
     defaults = {
         "settings.json": json.dumps(
-            {"enable": False, "user": "marko1616"},
+            {"enable": False, "user": ""},
             indent=2,
         ) + "\n",
         "authorized_keys": "# Import client public keys using ./cli.py\n",
@@ -220,11 +217,27 @@ if __name__ == "__main__" and sys.argv[1:2] == ["--fetch-qq"]:
     sys.exit(0)
 
 
+# Private-repository commands and the QQ builder need no UI dependencies.
+if __name__ == "__main__" and sys.argv[1:2] == ["private"]:
+    from scripts.private_config import main
+    sys.exit(main(ROOT, sys.argv[2:]))
+
+import questionary
+from rich.console import Console
+from rich.panel import Panel
+import typer
+
 app = typer.Typer()
 console = Console()
 
 # All available actions with descriptions
 TASKS = [
+    {"name": "private-init", "desc": "Initialize private-config/ from the public template."},
+    {"name": "private-switch", "desc": "Switch the private-config repository and lock its input."},
+    {"name": "private-status", "desc": "Check the private-config repository and input mapping."},
+    {"name": "private-edit-host", "desc": "Edit private-config/host.nix using EDITOR."},
+    {"name": "private-import-hardware", "desc": "Import the current /etc/nixos hardware file."},
+    {"name": "private-build-local", "desc": "Build using local private-config/ without changing the lock."},
     {
         "name": "configure-ssh",
         "desc": "Import public keys for one account, using IPv4 only.",
@@ -288,6 +301,7 @@ def run_configure_ssh():
     ))
 
     try:
+        ensure_ssh_config()
         settings_path = SSH_DIR / "settings.json"
         settings = json.loads(settings_path.read_text(encoding="utf-8"))
 
@@ -333,6 +347,7 @@ def run_disable_ssh():
     console.print(Panel.fit("[cyan]Disabling SSH[/cyan]"))
 
     try:
+        ensure_ssh_config()
         path = SSH_DIR / "settings.json"
         settings = json.loads(path.read_text(encoding="utf-8"))
         settings["enable"] = False
@@ -416,7 +431,17 @@ def main_menu():
         ).ask()
 
         if confirm:
-            if selected == "configure-ssh":
+            if selected.startswith("private-"):
+                from scripts.private_config import main as private_main
+                command = selected.removeprefix("private-")
+                arguments = [command]
+                if command == "switch":
+                    url = questionary.text("Private Git repository URL:").ask()
+                    if not url:
+                        continue
+                    arguments.append(url)
+                private_main(ROOT, arguments)
+            elif selected == "configure-ssh":
                 run_configure_ssh()
             elif selected == "disable-ssh":
                 run_disable_ssh()
@@ -434,16 +459,6 @@ def interactive():
     console.print(
         "[bold green]Welcome to the project's CLI Tool![/bold green]"
     )
-
-    try:
-        ensure_ssh_config()
-    except OSError as exc:
-        console.print(
-            f"Cannot initialize SSH configuration: {exc}",
-            style="red",
-            markup=False,
-        )
-        raise typer.Exit(code=1)
 
     main_menu()
 

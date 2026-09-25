@@ -271,7 +271,7 @@ layout {
 spawn-at-startup "waybar"
 // Wallpaper
 spawn-at-startup "awww-daemon"
-spawn-sh-at-startup "awww img /etc/nixos/assets/wallpapers/148557481_p1.png"
+spawn-sh-at-startup "awww img \"${XDG_DATA_HOME:-$HOME/.local/share}/wallpapers/desktop.png\""
 
 // To run a shell command (with variables, pipes, etc.), use spawn-sh-at-startup:
 // spawn-sh-at-startup "qs -c ~/source/qs/MyAwesomeShell"

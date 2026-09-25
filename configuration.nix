@@ -2,16 +2,13 @@
 # your system. Help is available in the configuration.nix(5) man page, on
 # https://search.nixos.org/options and in the NixOS manual (`nixos-help`).
 
-{ config, pkgs, ... }:
+{ config, pkgs, inputs, ... }:
 let
-  home-manager = builtins.fetchTarball "https://github.com/nix-community/home-manager/archive/release-26.05.tar.gz";
-  sddm-theme = pkgs.callPackage ./desktop/sddm-theme.nix { }; 
+  sddm-theme = pkgs.callPackage ./desktop/sddm-theme.nix { inherit inputs; };
 in
 {
   imports =
     [
-      "${home-manager}/nixos"
-      ./hardware-configuration.nix # Include the results of the hardware scan.
       ./desktop/niri.nix
       ./desktop/sddm-avatars.nix
       ./services/ssh.nix
@@ -24,39 +21,13 @@ in
   home-manager.useGlobalPkgs = true;
   home-manager.useUserPackages = true;
 
-  home-manager.users.marko1616 = import ./marko1616-home/home.nix;
-
-  # Use the systemd-boot EFI boot loader.
-  boot.loader.systemd-boot.enable = true;
-  boot.loader.efi.canTouchEfiVariables = true;
-
-  # Use latest kernel.
-  boot.kernelPackages = pkgs.linuxPackages_latest;
-
-  networking.hostName = "marko1616-laptop";
-  # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
-
-  # Configure network proxy if necessary
-  # networking.proxy.default = "http://127.0.0.1:10808";
-  # networking.proxy.noProxy = "127.0.0.1,localhost,internal.domain";
+  home-manager.sharedModules = [ ./marko1616-home/home.nix ];
 
   # Enable networking
   networking.networkmanager.enable = true;
 
   # Bluetooth
   hardware.bluetooth.enable = true;
-
-  # Set your time zone.
-  time.timeZone = "Asia/Hong_Kong";
-
-  # Select internationalisation properties.
-  i18n.defaultLocale = "en_HK.UTF-8";
-
-  # Configure keymap in X11
-  services.xserver.xkb = {
-    layout = "us";
-    variant = "";
-  };
 
   # Enable CUPS to print documents.
   services.printing.enable = true;
@@ -75,17 +46,6 @@ in
 
   # Enable touchpad support (enabled default in most desktopManager).
   # services.libinput.enable = true;
-
-  # Define a user account. Don't forget to set a password with ‘passwd’.
-  users.users."marko1616" = {
-    shell = pkgs.zsh;
-    isNormalUser = true;
-    description = "marko1616";
-    extraGroups = [ "networkmanager" "wheel" ];
-    packages = with pkgs; [
-    #  thunderbird
-    ];
-  };
 
   # Fonts
   fonts.packages = with pkgs; [
@@ -157,24 +117,5 @@ in
   # (/run/current-system/configuration.nix). This is useful in case you
   # accidentally delete configuration.nix.
   # system.copySystemConfiguration = true;
-
-  # This option defines the first version of NixOS you have installed on this particular machine,
-  # and is used to maintain compatibility with application data (e.g. databases) created on older NixOS versions.
-  #
-  # Most users should NEVER change this value after the initial install, for any reason,
-  # even if you've upgraded your system to a new NixOS release.
-  #
-  # This value does NOT affect the Nixpkgs version your packages and OS are pulled from,
-  # so changing it will NOT upgrade your system - see https://nixos.org/manual/nixos/stable/#sec-upgrading for how
-  # to actually do that.
-  #
-  # This value being lower than the current NixOS release does NOT mean your system is
-  # out of date, out of support, or vulnerable.
-  #
-  # Do NOT change this value unless you have manually inspected all the changes it would make to your configuration,
-  # and migrated your data accordingly.
-  #
-  # For more information, see `man configuration.nix` or https://nixos.org/manual/nixos/stable/options#opt-system.stateVersion .
-  system.stateVersion = "26.05"; # Did you read the comment?
 
 }
