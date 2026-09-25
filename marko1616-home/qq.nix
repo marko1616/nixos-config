@@ -1,21 +1,31 @@
 { pkgs, ... }:
 
 let
-  qq = pkgs.stdenv.mkDerivation {
+  source = builtins.fromJSON (builtins.readFile ../config/qq-source.json);
+
+  appimage = pkgs.stdenvNoCC.mkDerivation {
+    name = builtins.baseNameOf source.url;
+
+    nativeBuildInputs = [ pkgs.python3 ];
+
+    SSL_CERT_FILE = "${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt";
+    impureEnvVars = pkgs.lib.fetchers.proxyImpureEnvVars;
+
+    outputHashMode = "flat";
+    outputHashAlgo = "sha256";
+    outputHash = source.hash;
+
+    buildCommand = ''
+      python3 ${../cli.py} \
+        --fetch-qq ${pkgs.lib.escapeShellArg source.url} "$out"
+    '';
+  };
+
+  qq = pkgs.stdenvNoCC.mkDerivation {
     pname = "qq";
-    version = "3.2.33";
+    version = source.version;
 
-    src = pkgs.requireFile {
-      name = "QQ_3.2.33_260902_x86_64_01.AppImage";
-
-      message = ''
-        Please download QQ AppImage manually.
-        Then add it to the Nix store:
-          nix-store --add-fixed sha256 ./QQ_3.2.33_260902_x86_64_01.AppImage
-      '';
-
-      hash = "sha256-Ure8seexRvVmYnmsDaTlSdmVE13tZ70bkSmt1F/pCxQ=";
-    };
+    src = appimage;
 
     nativeBuildInputs = [ pkgs.makeWrapper ];
 

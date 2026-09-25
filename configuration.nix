@@ -14,6 +14,7 @@ in
       ./hardware-configuration.nix # Include the results of the hardware scan.
       ./desktop/niri.nix
       ./desktop/sddm-avatars.nix
+      ./services/ssh.nix
     ];
 
   # Experimental features
