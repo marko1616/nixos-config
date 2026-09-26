@@ -17,6 +17,7 @@
     xwayland-satellite
     wl-clipboard
     quickshell
+    iw # Supplies the kernel association query used by the QuickShell Wi-Fi panel.
     networkmanagerapplet # Provides nm-connection-editor for Advanced settings.
   ];
 }

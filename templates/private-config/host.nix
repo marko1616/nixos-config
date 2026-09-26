@@ -1,6 +1,6 @@
 { pkgs, repoRoot, ... }:
 let
-  # Replace these examples in private/host.nix before the first build.
+  # Replace these examples in private-config/host.nix before the first build.
   username = "CHANGE_ME_USER";
   hostname = "CHANGE_ME_HOST";
 in {
@@ -35,6 +35,6 @@ in {
   system.stateVersion = "26.05";
   assertions = [ {
     assertion = username != "CHANGE_ME_USER" && hostname != "CHANGE_ME_HOST";
-    message = "Edit the username and host settings in private/host.nix first.";
+    message = "Edit the username and host settings in private-config/host.nix first.";
   } ];
 }

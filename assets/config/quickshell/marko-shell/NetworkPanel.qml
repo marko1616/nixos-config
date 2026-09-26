@@ -11,11 +11,15 @@ PopoverBase {
     id: root
     popHeight: 420
     property string errorText: ""
-    property var apByNetwork: Object.create(null)
+    property var connectedApByDevice: Object.create(null)
     property int apGeneration: 0
     property int apOperationGeneration: 0
     property bool apBusy: false
     property bool apRefreshQueued: false
+    property var apDevices: []
+    property int apDeviceIndex: 0
+    property var apPending: Object.create(null)
+    property string apDevice: ""
     // The password field needs real keyboard input, which an ungrabbed popup does
     // not receive, so the popup takes the grab back while a prompt is visible.
     property bool pskActive: false
@@ -46,73 +50,70 @@ PopoverBase {
             || network.security === WifiSecurityType.Sae
     }
 
-    function parseNmcliFields(line) {
-        var fields = []
-        var field = ""
-        var escaped = false
-        for (var i = 0; i < line.length; i++) {
-            var ch = line[i]
-            if (escaped) {
-                field += ch
-                escaped = false
-            } else if (ch === "\\") {
-                escaped = true
-            } else if (ch === ":") {
-                fields.push(field)
-                field = ""
+    function decodeIwSsid(value) {
+        var encoded = ""
+        for (var i = 0; i < value.length; i++) {
+            var code = value.charCodeAt(i)
+            if (value[i] === "\\") {
+                if (i + 3 >= value.length || value[i + 1] !== "x"
+                        || !/^[0-9a-fA-F]{2}$/.test(value.slice(i + 2, i + 4))) return null
+                encoded += "%" + value.slice(i + 2, i + 4)
+                i += 3
             } else {
-                field += ch
+                if (code > 0x7f) return null
+                var hex = code.toString(16)
+                encoded += "%" + (hex.length === 1 ? "0" : "") + hex
             }
         }
-        fields.push(field)
-        return fields
+        try {
+            return decodeURIComponent(encoded)
+        } catch (error) {
+            return null
+        }
     }
 
-    function apKey(device, ssid) {
-        return JSON.stringify([device, ssid])
-    }
-
-    function parseApSnapshot(output) {
-        var result = Object.create(null)
+    function parseLinkSnapshot(device, output) {
+        var bssid = ""
+        var ssid = ""
+        var disconnected = false
         var lines = output.split("\n")
         for (var i = 0; i < lines.length; i++) {
-            if (!lines[i]) continue
-            var fields = parseNmcliFields(lines[i])
-            if (fields.length !== 5 || !fields[0]
-                    || !/^(?:[0-9a-fA-F]{2}:){5}[0-9a-fA-F]{2}$/.test(fields[2])
-                    || !/^\d+$/.test(fields[4])) return null
-            if (!fields[3]) continue // Hidden SSIDs cannot be matched reliably.
-            var strength = Number(fields[4])
-            if (strength > 100 || (fields[1] !== "" && fields[1] !== "*")) return null
-            var key = apKey(fields[0], fields[3])
-            var entry = result[key]
-            if (!entry) entry = { strongest: "", strength: -1, connected: "", activeCount: 0 }
-            if (strength > entry.strength) {
-                entry.strongest = fields[2]
-                entry.strength = strength
+            var line = lines[i].replace(/\r$/, "")
+            if (!line) continue
+            if (/^\s*Not connected\.$/.test(line)) {
+                disconnected = true
+                continue
             }
-            if (fields[1] === "*") {
-                entry.connected = fields[2]
-                entry.activeCount++
+            var connected = line.match(/^\s*Connected to ((?:[0-9a-fA-F]{2}:){5}[0-9a-fA-F]{2}) \(on ([^)]+)\)$/)
+            if (connected) {
+                if (connected[2] !== device || bssid) return null
+                bssid = connected[1]
+                continue
             }
-            result[key] = entry
+            var ssidLine = line.match(/^\s*SSID: (.*)$/)
+            if (ssidLine) {
+                if (ssid) return null
+                ssid = decodeIwSsid(ssidLine[1])
+                if (ssid === null) return null
+            }
         }
-        return result
+        if (disconnected) return bssid || ssid ? null : ({ connected: false })
+        if (!bssid || !ssid) return null
+        return { connected: true, bssid: bssid, ssid: ssid }
     }
 
     function apLabel(network) {
+        if (!network.connected) return ""
         var device = network.device ? network.device.name : ""
-        var entry = apByNetwork[apKey(device, network.name)]
-        var prefix = network.connected ? "Connected AP · " : "Strongest visible AP · "
-        var bssid = entry ? (network.connected
-            ? (entry.activeCount === 1 ? entry.connected : "") : entry.strongest) : ""
-        return prefix + (bssid || "Unavailable")
+        var entry = connectedApByDevice[device]
+        var bssid = entry && entry.ssid === network.name ? entry.bssid : ""
+        return "BSSID · " + (bssid || "Unavailable")
     }
 
     function requestApInfo(invalidate) {
         if (invalidate) {
             apGeneration++
-            apByNetwork = Object.create(null)
+            connectedApByDevice = Object.create(null)
         }
         apRefreshQueued = root.visible && Networking.wifiEnabled
         Qt.callLater(pumpApInfo)
@@ -123,20 +124,49 @@ PopoverBase {
         if (!root.visible || !Networking.wifiEnabled) { apRefreshQueued = false; return }
         apRefreshQueued = false
         apOperationGeneration = apGeneration
+        apDevices = Networking.devices.values.filter(function(device) {
+            return device.type === DeviceType.Wifi && device.name
+        }).map(function(device) { return device.name })
+        apDeviceIndex = 0
+        apPending = Object.create(null)
         apBusy = true
+        startNextApInfo()
+    }
+
+    function startNextApInfo() {
+        if (!apBusy) return
+        if (apOperationGeneration !== apGeneration || !root.visible || !Networking.wifiEnabled) {
+            apBusy = false
+            Qt.callLater(pumpApInfo)
+            return
+        }
+        if (apDeviceIndex >= apDevices.length) {
+            connectedApByDevice = apPending
+            apBusy = false
+            Qt.callLater(pumpApInfo)
+            return
+        }
+        apDevice = apDevices[apDeviceIndex]
+        apInfo.command = ["iw", "dev", apDevice, "link"]
         apWatchdog.restart()
         apInfo.running = true
     }
 
     function finishApInfo(success, output) {
         if (!apBusy) return
-        apBusy = false
         apWatchdog.stop()
-        if (apOperationGeneration === apGeneration && root.visible && Networking.wifiEnabled) {
-            var snapshot = success ? parseApSnapshot(output) : null
-            apByNetwork = snapshot || Object.create(null)
+        apKillWatchdog.stop()
+        if (apOperationGeneration !== apGeneration || !root.visible || !Networking.wifiEnabled) {
+            apBusy = false
+            Qt.callLater(pumpApInfo)
+            return
         }
-        Qt.callLater(pumpApInfo)
+        var snapshot = success ? parseLinkSnapshot(apDevice, output) : null
+        if (snapshot && snapshot.connected) {
+            apPending[apDevice] = { ssid: snapshot.ssid, bssid: snapshot.bssid }
+        }
+        apDeviceIndex++
+        Qt.callLater(startNextApInfo)
     }
 
     Connections {
@@ -150,8 +180,7 @@ PopoverBase {
 
     Process {
         id: apInfo
-        command: ["nmcli", "-t", "--escape", "yes", "-f", "DEVICE,IN-USE,BSSID,SSID,SIGNAL",
-                  "device", "wifi", "list", "--rescan", "no"]
+        command: []
         environment: ({ "LC_ALL": "C" })
         stdout: StdioCollector { id: apOutput }
         onExited: function(code, status) { root.finishApInfo(code === 0 && status === 0, apOutput.text) }
@@ -166,8 +195,17 @@ PopoverBase {
         interval: 5000
         onTriggered: {
             root.apGeneration++
-            root.apByNetwork = Object.create(null)
+            root.connectedApByDevice = Object.create(null)
+            root.apRefreshQueued = root.visible && Networking.wifiEnabled
             apInfo.running = false
+            apKillWatchdog.restart()
+        }
+    }
+    Timer {
+        id: apKillWatchdog
+        interval: 1000
+        onTriggered: {
+            if (apInfo.running) apInfo.signal(9)
         }
     }
     Timer {
@@ -323,6 +361,7 @@ PopoverBase {
                             }
                             Text {
                                 Layout.fillWidth: true
+                                visible: modelData.connected
                                 text: root.apLabel(modelData)
                                 color: Theme.border
                                 font.family: Theme.fontFamily

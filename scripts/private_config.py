@@ -121,6 +121,32 @@ def status(root):
             print('NOTICE: local origin and Flake input differ; normal rebuild does not use this working tree.')
 
 
+def locked_private_revision(root):
+    """Resolve the root input edge; node names need not equal input names."""
+    lock = json.loads((root / 'flake.lock').read_text())
+    nodes = lock['nodes']
+    edge = nodes[lock['root']]['inputs']['private-config']
+    if not isinstance(edge, str):
+        raise ValueError('private-config must be a direct locked Git input.')
+    locked = nodes[edge]['locked']
+    revision = locked.get('rev', '')
+    if locked.get('type') != 'git' or not re.fullmatch(r'[0-9a-fA-F]{40}', revision):
+        raise ValueError('private-config must resolve to a full Git revision.')
+    return revision.lower()
+
+
+def require_prod_lock(root):
+    """A lock on disk is insufficient if the Git flake omits it."""
+    lock = root / 'flake.lock'
+    if lock.is_symlink() or not lock.is_file():
+        raise ValueError('prod requires a reviewed flake.lock; update inputs explicitly first.')
+    git(root, 'ls-files', '--error-unmatch', '--', 'flake.lock', capture=True)
+    data = json.loads(lock.read_text())
+    if not isinstance(data, dict) or not isinstance(data.get('nodes'), dict):
+        raise ValueError('Invalid flake.lock; review and regenerate it explicitly.')
+    # Nix validates the complete graph and refuses changes via --no-update-lock-file.
+
+
 def switch(root, url):
     url = normalize_url(url)
     directory = root / 'private-config'
@@ -141,6 +167,20 @@ def switch(root, url):
             set_input(root, 'git+' + url)
             # Resolve/authenticate the remote and lock it before replacing local files.
             run(['nix', 'flake', 'update', '--flake', flake_ref(root), 'private-config'], root)
+            revision = locked_private_revision(root)
+            # The branch may have advanced between clone and lock resolution.
+            # Fetch exactly the locked commit, never resolve the branch again.
+            present = subprocess.run(
+                ['git', '-C', str(candidate), 'cat-file', '-e', revision + '^{commit}'],
+                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+            ).returncode == 0
+            if not present:
+                git(candidate, 'fetch', 'origin', revision)
+            git(candidate, 'checkout', '--detach', revision)
+            actual = git(candidate, 'rev-parse', 'HEAD', capture=True).stdout.strip()
+            if actual != revision:
+                raise ValueError('Candidate HEAD does not match the private lock revision.')
+            require_repo(candidate, clean=True)
             if directory.exists():
                 suffix = datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%S%fZ')
                 backup = root / ('.private-backup-' + suffix)
@@ -157,9 +197,10 @@ def switch(root, url):
                 backup.rename(directory)
             raise
     if moved:
-        print('Switched private-config/ and updated the input. Review flake.nix and flake.lock.')
+        print('Switched private-config/ to the locked revision (detached HEAD). Review flake.nix and flake.lock.')
         if backup:
             print('Previous repository retained at', backup.name)
+        print('Create or switch to a branch before continuing development.')
         print('No commits, pushes or system activation were performed.')
 
 
@@ -213,13 +254,6 @@ def edit_host(root):
     run(editor + [str(root / 'private-config/host.nix')], root)
 
 
-def local_build(root):
-    require_repo(root / 'private-config')
-    run(['nixos-rebuild', 'build', '--flake', flake_ref(root) + '#default',
-         '--override-input', 'private-config', 'path:' + str(root / 'private-config'),
-         '--no-write-lock-file'], root)
-
-
 def main(root, argv):
     parser = argparse.ArgumentParser(prog='cli.py private')
     sub = parser.add_subparsers(dest='command', required=True)
@@ -234,7 +268,6 @@ def main(root, argv):
     p.add_argument('--from-dir', type=Path, required=True)
     p.add_argument('--replace', action='store_true')
     sub.add_parser('edit-host', help='Open private-config/host.nix using EDITOR')
-    sub.add_parser('build-local', help='Build only, using private-config/ without changing flake.lock')
     args = parser.parse_args(argv)
     root = Path(root).resolve()
     try:
@@ -244,8 +277,7 @@ def main(root, argv):
         elif args.command == 'import-hardware': import_hardware(root, args.source, args.replace)
         elif args.command == 'import-ssh': import_ssh(root, args.from_dir, args.replace)
         elif args.command == 'edit-host': edit_host(root)
-        elif args.command == 'build-local': local_build(root)
         return 0
-    except (OSError, ValueError, subprocess.CalledProcessError) as exc:
+    except (OSError, ValueError, KeyError, TypeError, subprocess.CalledProcessError) as exc:
         print(f'Private configuration operation failed: {exc}', file=__import__('sys').stderr)
         return 1

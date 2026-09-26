@@ -10,7 +10,7 @@ Niri、SDDM / Pixie、QuickShell（marko-shell 顶栏）、Wofi、Kitty、Mako�
 
 顶栏为 `assets/config/quickshell/marko-shell/` 中的 QuickShell 配置，安装到 `~/.config/quickshell/marko-shell`。
 
-工作区用橙色圆点提示 urgency。Wi-Fi AP 地址是周期采样：已连接行显示当前 AP，其他行明确显示同网卡下的最强可见 AP。本配置不再安装旧 Waybar、bzmenu 和 networkmanager_dmenu。
+工作区用橙色圆点提示 urgency。已连接的 Wi-Fi 行通过安装的 `iw` 工具读取内核关联状态中的 BSSID，并要求同一状态中的 SSID 与 QuickShell 行一致，避免把同名邻近 AP 错配到当前网络；未连接行不再推测 AP 地址。本配置不再安装旧 Waybar、bzmenu 和 networkmanager_dmenu。
 
 换肤后的 Qt 控件在弹窗取得键盘焦点时支持键盘操作；默认悬停关闭弹窗仍不 grab。现有 `Theme.popupGrabFocus` 可切回 grab 模式，但外部点击关闭将由合成器处理。
 

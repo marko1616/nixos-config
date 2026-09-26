@@ -3,6 +3,6 @@
 { ... }: {
   assertions = [ {
     assertion = false;
-    message = "Hardware template: import the target machine hardware-configuration.nix into private/ before building.";
+    message = "Hardware template: import the target machine hardware-configuration.nix into private-config/ before building.";
   } ];
 }

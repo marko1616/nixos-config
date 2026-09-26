@@ -10,7 +10,7 @@ Niri, SDDM / Pixie, QuickShell (marko-shell bar), Wofi, Kitty and Mako with Toky
 
 The bar is the QuickShell configuration in `assets/config/quickshell/marko-shell/`, installed to `~/.config/quickshell/marko-shell`.
 
-The workspace indicator marks urgency with an orange dot. Wi-Fi AP addresses are periodic snapshots: connected rows show the active AP; other rows explicitly show the strongest visible AP on that interface. Legacy Waybar, bzmenu and networkmanager_dmenu are no longer installed by this configuration.
+The workspace indicator marks urgency with an orange dot. Connected Wi-Fi rows show the BSSID reported by the kernel association through the installed `iw` utility; the SSID from the same association must match the QuickShell row, so nearby APs with the same name cannot be mislabelled. Disconnected rows do not infer an AP address. Legacy Waybar, bzmenu and networkmanager_dmenu are no longer installed by this configuration.
 
 The skinned Qt controls support keyboard input when the popup has keyboard focus. Default hover-dismiss popups remain grab-free; `Theme.popupGrabFocus` is the existing opt-in fallback, with compositor-driven outside-click dismissal.
 
