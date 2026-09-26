@@ -1,7 +1,7 @@
 import QtQuick
 import Quickshell
 
-// Common popover window: anchored below an item, auto-dismiss on outside click.
+// Shared anchored popup, normally dismissed on pointer departure.
 PopupWindow {
     id: root
     default property alias contentData: surface.data

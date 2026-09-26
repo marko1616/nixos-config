@@ -19,13 +19,7 @@
   };
 
   outputs = inputs@{ nixpkgs, home-manager, ... }:
-    let
-      system = "x86_64-linux";
-      pkgs = import nixpkgs { inherit system; };
-      cliPython = pkgs.python3.withPackages (ps: [
-        ps.typer ps.questionary ps.rich
-      ]);
-    in {
+    {
       nixosConfigurations.default = nixpkgs.lib.nixosSystem {
         specialArgs = { inherit inputs; repoRoot = ./.; };
         modules = [

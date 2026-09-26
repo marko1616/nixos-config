@@ -1,7 +1,7 @@
 pragma Singleton
 import QtQuick
 
-// Tokyo Night (Storm) palette, matching the existing Waybar / Wofi / Mako / SDDM theme.
+// Tokyo Night (Storm) palette, matching the Wofi / Mako / SDDM theme.
 QtObject {
     readonly property color fg: "#a9b1d6"
     readonly property color moduleBg: "#24283b"
@@ -16,8 +16,6 @@ QtObject {
     readonly property color orange: "#ff9e64"
     readonly property color red: "#f7768e"
 
-    readonly property color selection: "#7aa2f7"
-    readonly property color selectionText: "#1a1b26"
 
     readonly property string fontFamily: "Terminess Nerd Font"
     readonly property int fontSize: 14
@@ -43,7 +41,6 @@ QtObject {
     readonly property color controlThumb: "#ffffff"
 
     readonly property string wifiIcon: ""
-    readonly property string ethIcon: "󰈀"
     readonly property string bluetoothIcon: ""
     readonly property string audioMutedIcon: ""
     readonly property string audioLowIcon: ""
@@ -58,5 +55,4 @@ QtObject {
     readonly property string powerPerfIcon: ""
     readonly property string powerBalancedIcon: ""
     readonly property string powerSaverIcon: ""
-    readonly property var wifiSignalIcons: ["󰤯", "󰤟", "󰤢", "󰤥", "󰤨"]
 }

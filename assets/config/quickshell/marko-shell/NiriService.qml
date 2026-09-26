@@ -7,32 +7,35 @@ import Quickshell.Io
 Item {
     id: root
     property var workspaces: []
-    property var focusedId: null
+    property bool available: false
 
     function handleLine(line) {
         var ev = null
         try { ev = JSON.parse(line) } catch (e) { return }
         if (!ev) return
 
-        if (ev.WorkspacesChanged) {
+        if (ev.WorkspacesChanged && Array.isArray(ev.WorkspacesChanged.workspaces)) {
             workspaces = ev.WorkspacesChanged.workspaces.map(function(w) {
                 return {
                     id: w.id, idx: w.idx, name: w.name, output: w.output,
                     active: w.is_active, focused: w.is_focused, urgent: w.is_urgent
                 }
             })
-        } else if (ev.WorkspaceActivated) {
+            available = true
+        } else if (available && ev.WorkspaceActivated) {
             applyActivated(ev.WorkspaceActivated.id, ev.WorkspaceActivated.focused)
-        } else if (ev.WorkspaceUrgencyChanged) {
+        } else if (available && ev.WorkspaceUrgencyChanged) {
             applyUrgency(ev.WorkspaceUrgencyChanged.id, ev.WorkspaceUrgencyChanged.urgent)
         }
     }
 
     function applyActivated(id, focused) {
         var output = null
+        var found = false
         for (var i = 0; i < workspaces.length; i++) {
-            if (workspaces[i].id === id) { output = workspaces[i].output; break }
+            if (workspaces[i].id === id) { output = workspaces[i].output; found = true; break }
         }
+        if (!found) return
         var out = []
         for (var j = 0; j < workspaces.length; j++) {
             var w = workspaces[j]
@@ -48,7 +51,6 @@ Item {
             })
         }
         workspaces = out
-        if (focused) focusedId = id
     }
 
     function applyUrgency(id, urgent) {
@@ -64,7 +66,13 @@ Item {
         workspaces = out
     }
 
+    function markDisconnected() {
+        available = false
+        workspaces = []
+    }
+
     function focusWorkspace(id) {
+        if (!available || !workspaces.some(function(w) { return w.id === id })) return
         var socketPath = Quickshell.env("NIRI_SOCKET")
         if (!socketPath) {
             console.warn("Cannot focus workspace: NIRI_SOCKET is not set")
@@ -126,7 +134,10 @@ Item {
             onRead: function(data) { handleLine(data) }
         }
         onRunningChanged: {
-            if (!running) restart.start()
+            if (!running) {
+                root.markDisconnected()
+                restart.start()
+            }
         }
     }
 

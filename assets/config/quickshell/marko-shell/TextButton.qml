@@ -1,41 +1,33 @@
 import QtQuick
+import QtQuick.Templates as T
 
-// Borderless text action. A subtle hover/press wash keeps it discoverable without
-// bringing the platform Qt Controls style into the popup.
-Rectangle {
+// Native button focus/accessibility with the existing borderless skin.
+T.Button {
     id: control
-
-    property alias text: label.text
     property color textColor: Theme.blue
-    signal clicked()
-
-    implicitWidth: label.implicitWidth + 16
+    implicitWidth: contentItem.implicitWidth + leftPadding + rightPadding
     implicitHeight: 32
-    radius: implicitHeight / 2
-    color: pointer.pressed ? Qt.rgba(0.48, 0.64, 0.97, 0.20)
-         : pointer.containsMouse ? Qt.rgba(0.48, 0.64, 0.97, 0.10)
-         : "transparent"
+    leftPadding: 8
+    rightPadding: 8
+    hoverEnabled: true
+    focusPolicy: Qt.StrongFocus
     opacity: enabled ? 1 : 0.45
-
-    Behavior on color {
-        ColorAnimation { duration: 100 }
+    background: Rectangle {
+        radius: height / 2
+        color: control.down ? Qt.rgba(0.48, 0.64, 0.97, 0.20)
+             : control.hovered || control.visualFocus ? Qt.rgba(0.48, 0.64, 0.97, 0.10)
+             : "transparent"
+        border.width: control.visualFocus ? 1 : 0
+        border.color: Theme.blue
+        Behavior on color { ColorAnimation { duration: 100 } }
     }
-
-    Text {
-        id: label
-        anchors.centerIn: parent
+    contentItem: Text {
+        text: control.text
         color: control.textColor
         font.family: Theme.fontFamily
         font.pixelSize: Theme.fontSize
         font.bold: true
-    }
-
-    MouseArea {
-        id: pointer
-        anchors.fill: parent
-        enabled: control.enabled
-        hoverEnabled: true
-        cursorShape: Qt.PointingHandCursor
-        onClicked: control.clicked()
+        horizontalAlignment: Text.AlignHCenter
+        verticalAlignment: Text.AlignVCenter
     }
 }

@@ -25,9 +25,10 @@ PopoverBase {
             Item { Layout.fillWidth: true }
             ModernSwitch {
                 id: btSwitch
+                Accessible.name: "Bluetooth"
                 enabled: Bluetooth.defaultAdapter !== null
-                checked: Bluetooth.defaultAdapter ? Bluetooth.defaultAdapter.enabled : false
-                onToggled: function(nextChecked) {
+                backendChecked: Bluetooth.defaultAdapter ? Bluetooth.defaultAdapter.enabled : false
+                onToggleRequested: function(nextChecked) {
                     if (Bluetooth.defaultAdapter) Bluetooth.defaultAdapter.enabled = nextChecked
                 }
             }
@@ -55,9 +56,10 @@ PopoverBase {
             Item { Layout.fillWidth: true }
             ModernSwitch {
                 id: scanSwitch
+                Accessible.name: "Bluetooth scanning"
                 enabled: Bluetooth.defaultAdapter ? Bluetooth.defaultAdapter.enabled : false
-                checked: Bluetooth.defaultAdapter ? Bluetooth.defaultAdapter.discovering : false
-                onToggled: function(nextChecked) {
+                backendChecked: Bluetooth.defaultAdapter ? Bluetooth.defaultAdapter.discovering : false
+                onToggleRequested: function(nextChecked) {
                     if (Bluetooth.defaultAdapter) Bluetooth.defaultAdapter.discovering = nextChecked
                 }
             }

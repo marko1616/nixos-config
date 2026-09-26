@@ -16,8 +16,7 @@ PanelWindow {
     exclusiveZone: Theme.barHeight
     screen: modelData
 
-    property var now: new Date()
-    Timer { interval: 15000; repeat: true; running: true; onTriggered: bar.now = new Date() }
+    SystemClock { id: clock; precision: SystemClock.Minutes }
 
     property string networkLabel: {
         var ds = Networking.devices.values
@@ -60,6 +59,23 @@ PanelWindow {
 
     onPointerOnBarChanged: Popover.setBarHover(bar.screen ? bar.screen.name : "", pointerOnBar)
 
+    function showTrayMenu(item, icon) {
+        if (!item.hasMenu) return
+        Popover.closeAll()
+        var point = icon.mapToItem(bar.contentItem, 0, icon.height)
+        item.display(bar, Math.round(point.x), Math.round(point.y))
+    }
+
+    function activateTray(item, button, icon) {
+        if (button === Qt.RightButton || (button === Qt.LeftButton && item.onlyMenu)) {
+            showTrayMenu(item, icon)
+        } else if (button === Qt.MiddleButton) {
+            item.secondaryActivate()
+        } else if (button === Qt.LeftButton) {
+            item.activate()
+        }
+    }
+
     function batteryIcon(pct, charging) {
         if (charging) return Theme.batteryChargingIcon
         if (pct >= 90) return Theme.batteryIcons[4]
@@ -93,12 +109,14 @@ PanelWindow {
                                    : "Estimating remaining time…"
     }
     function cpuDetailsText() {
+        if (SystemStats.cpuError !== "") return SystemStats.cpuError
         var values = SystemStats.cpuCoreUsages
         if (!values || values.length === 0) return "Per-CPU usage\nCollecting samples…"
         var lines = ["Per-CPU usage"]
         var row = []
         for (var i = 0; i < values.length; i++) {
-            row.push("CPU" + i + " " + Math.round(values[i]) + "%")
+            if (values[i] === undefined) continue
+            row.push("CPU" + i + " " + (values[i] === null ? "…" : Math.round(values[i]) + "%"))
             if (row.length === 4 || i === values.length - 1) {
                 lines.push(row.join("    "))
                 row = []
@@ -112,11 +130,12 @@ PanelWindow {
         return Math.round(kib / 1024) + " MiB"
     }
     function memoryDetailsText() {
+        if (!SystemStats.memReady) return SystemStats.memError || "Collecting memory sample…"
         var lines = ["Memory details"]
         lines.push("Used " + formatKiB(SystemStats.memUsedKiB)
             + " / " + formatKiB(SystemStats.memTotalKiB))
         lines.push("Available " + formatKiB(SystemStats.memAvailableKiB))
-        lines.push("File cache " + formatKiB(SystemStats.memFileCacheKiB))
+        lines.push("Page cache (excl. shared) " + formatKiB(SystemStats.memPageCacheKiB))
         lines.push("Buffers " + formatKiB(SystemStats.memBuffersKiB)
             + " · Reclaimable " + formatKiB(SystemStats.memReclaimableKiB))
         lines.push("Swap " + formatKiB(SystemStats.swapUsedKiB)
@@ -139,8 +158,7 @@ PanelWindow {
         return "Balanced"
     }
 
-    // Clicking the bar's empty area dismisses an open popup, like the dismiss
-    // surface below the bar does for the rest of the screen.
+    // Clicking the bar's empty area dismisses an open popup.
     MouseArea {
         anchors.fill: parent
         onClicked: {
@@ -189,6 +207,7 @@ PanelWindow {
                         }
                         delegate: Text {
                             required property var modelData
+                            enabled: NiriService.available
                             text: modelData.focused || modelData.active ? Theme.workspaceActiveIcon : Theme.workspaceDefaultIcon
                             color: modelData.focused ? Theme.blue
                                  : (modelData.active ? Theme.fg : Theme.border)
@@ -198,13 +217,31 @@ PanelWindow {
                                 anchors.fill: parent
                                 onClicked: NiriService.focusWorkspace(modelData.id)
                             }
+                            Rectangle {
+                                width: 5
+                                height: 5
+                                radius: 2.5
+                                anchors.right: parent.right
+                                anchors.top: parent.top
+                                visible: modelData.urgent === true
+                                color: Theme.orange
+                            }
                         }
                     }
                 }
             }
 
-            Pill { id: cpuPill; icon: Theme.cpuIcon; label: Math.round(SystemStats.cpuUsage) + "%"; accent: Theme.blue }
-            Pill { id: memPill; icon: Theme.memoryIcon; label: Math.round(SystemStats.memUsage) + "%"; accent: Theme.purple }
+            Text {
+                visible: !NiriService.available
+                text: "Niri offline"
+                color: Theme.border
+                font.family: Theme.fontFamily
+                font.pixelSize: Theme.fontSize
+                anchors.verticalCenter: parent.verticalCenter
+            }
+
+            Pill { id: cpuPill; icon: Theme.cpuIcon; label: SystemStats.cpuReady ? Math.round(SystemStats.cpuUsage) + "%" : "--"; accent: Theme.blue }
+            Pill { id: memPill; icon: Theme.memoryIcon; label: SystemStats.memReady ? Math.round(SystemStats.memUsage) + "%" : "--"; accent: Theme.purple }
 
             Rectangle {
                 id: trayPill
@@ -223,6 +260,7 @@ PanelWindow {
                     Repeater {
                         model: SystemTray.items
                         delegate: Image {
+                            id: trayIcon
                             required property var modelData
                             source: modelData.icon
                             width: 18
@@ -230,7 +268,14 @@ PanelWindow {
                             fillMode: Image.PreserveAspectFit
                             MouseArea {
                                 anchors.fill: parent
-                                onClicked: modelData.activate()
+                                acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
+                                onClicked: function(mouse) { bar.activateTray(modelData, mouse.button, trayIcon) }
+                                onWheel: function(wheel) {
+                                    if (wheel.angleDelta.y !== 0) modelData.scroll(wheel.angleDelta.y, false)
+                                    else if (wheel.angleDelta.x !== 0) modelData.scroll(wheel.angleDelta.x, true)
+                                    else { wheel.accepted = false; return }
+                                    wheel.accepted = true
+                                }
                             }
                         }
                     }
@@ -243,7 +288,7 @@ PanelWindow {
             id: clockPill
             anchors.centerIn: parent
             icon: Theme.clockIcon
-            label: Qt.formatDateTime(bar.now, "hh:mm MM/dd/yy")
+            label: Qt.formatDateTime(clock.date, "hh:mm MM/dd/yy")
             accent: Theme.orange
         }
 
@@ -271,7 +316,7 @@ PanelWindow {
             Pill {
                 id: audioPill
                 icon: bar.audioIcon()
-                label: AudioService.volume + "%"
+                label: AudioService.available ? AudioService.volume + "%" : "--"
                 accent: Theme.yellow
                 onLeftClicked: Popover.toggle(audioPopup)
                 onRightClicked: AudioService.toggleMute()

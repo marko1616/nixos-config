@@ -2,7 +2,7 @@
 
 English | [中文](README_zh.md)
 
-A Niri desktop and Home Manager configuration with Flake inputs. Machine settings live in a separate private Git repository checked out at `private/`.
+A Niri desktop and Home Manager configuration with Flake inputs. Machine settings live in a separate private Git repository checked out at `private-config/`.
 
 ## Desktop
 
@@ -10,18 +10,24 @@ Niri, SDDM / Pixie, QuickShell (marko-shell bar), Wofi, Kitty and Mako with Toky
 
 The bar is the QuickShell configuration in `assets/config/quickshell/marko-shell/`, installed to `~/.config/quickshell/marko-shell`.
 
+The workspace indicator marks urgency with an orange dot. Wi-Fi AP addresses are periodic snapshots: connected rows show the active AP; other rows explicitly show the strongest visible AP on that interface. Legacy Waybar, bzmenu and networkmanager_dmenu are no longer installed by this configuration.
+
+The skinned Qt controls support keyboard input when the popup has keyboard focus. Default hover-dismiss popups remain grab-free; `Theme.popupGrabFocus` is the existing opt-in fallback, with compositor-driven outside-click dismissal.
+
 ## Tools
 
 Zsh / Oh My Zsh, Neovim, LLVM / Clang, Python, btop, QQ and optional public-key SSH.
 
+Neovim plugins are pinned submodules deployed read-only; Tree-sitter parsers and queries are installed to the writable Neovim data `site` directory. Use `:TSInstall` for required languages and explicitly run `:TSUpdate` after updating the Tree-sitter plugin. Startup does not install or update parsers.
+
 ## Structure
 
 ```text
-flake.nix                   # System entry point and CLI development environment
+flake.nix                   # System entry point
 flake.lock                  # Generate and commit during initial migration
 configuration.nix           # Shared system settings
 cli.py                      # Interactive CLI and QQ download entry point
-private_config.py           # Private repository management
+scripts/private_config.py   # Private repository management
 private-config/             # Independent repository, ignored by the public repo
   host.nix                  # Host, accounts, kernel and stateVersion settings
   hardware-configuration.nix # Machine hardware, UUIDs and mounts
@@ -47,7 +53,7 @@ nix flake lock "$flake_ref"
 ./cli.py
 ```
 
-Review the username, hostname, boot loader and both stateVersion values in `private/host.nix`. The template deliberately prevents building a bootable system until the real hardware configuration is supplied.
+Review the username, hostname, boot loader and both stateVersion values in `private-config/host.nix`. The template deliberately prevents building a bootable system until the real hardware configuration is supplied.
 
 Use `update-qq` before applying updates when a newer upstream release is needed; do not update when reproducing or rolling back a pinned version. The source metadata is `config/qq-source.json`.
 
@@ -59,9 +65,24 @@ Use `update-qq` before applying updates when a newer upstream release is needed;
 ./cli.py private status
 ```
 
-Switching refuses uncommitted local changes, retains the old directory as a backup, and restores the input/lock on failure. The CLI never commits, pushes or activates the system. Remote input URLs and revisions remain visible in the public lock file. Do not put private keys or passwords in Flake sources.
+Switching refuses uncommitted local changes, checks out the candidate at the exact private revision resolved by the new lock (detached HEAD), validates it, retains the old directory as a backup, and restores the input/lock on failure. Create a development branch before making new commits in that checkout. Private-repository commands never commit, push or activate the system; the interactive `switch-dev` and `switch-prod` actions do activate it. Remote input URLs and revisions remain visible in the public lock file. Do not put private keys or passwords in Flake sources.
 
-## Build
+## Build and activate
+
+Open the interactive menu with `./cli.py`, select one of these four actions, then confirm. These are menu entries, not subcommands such as `./cli.py build-dev`.
+
+| Action | Private configuration source | Effect |
+| --- | --- | --- |
+| `build-dev` | Local `private-config/`, including uncommitted changes | Build only |
+| `switch-dev` | Same as above | Build and immediately activate |
+| `build-prod` | Input declared in `flake.nix` and pinned in `flake.lock` | Build only |
+| `switch-prod` | Same as above | Build and immediately activate |
+
+All four invoke `sudo nixos-rebuild`, target `default`, and use the current local public Git working tree with submodules. `prod` **does not fetch the public repository's latest HEAD**, nor update the private revision automatically. If the input still points to the template, prod uses that template and hits its protective assertions. Prod requires a reviewed, Git-indexed `flake.lock` and uses `--no-update-lock-file`: missing or mismatched locks fail instead of being silently refreshed.
+
+`dev` overrides the private input with the local directory and adds `--no-write-lock-file`; prod does not override inputs. New public configuration files must be in the Git index to be included in the Git flake. `private build-local` has been removed; use the interactive `build-dev` entry instead (it invokes sudo).
+
+Equivalent manual build workflow:
 
 Test local configuration without updating the lock:
 
@@ -74,9 +95,9 @@ After committing and pushing private changes, use the locked remote input:
 
 ```bash
 nix flake update --flake "$flake_ref" private-config
-sudo nixos-rebuild build --flake "$flake_ref#default"
-sudo nixos-rebuild test --flake "$flake_ref#default"
-sudo nixos-rebuild switch --flake "$flake_ref#default"
+sudo nixos-rebuild build --flake "$flake_ref#default" --no-update-lock-file
+sudo nixos-rebuild test --flake "$flake_ref#default" --no-update-lock-file
+sudo nixos-rebuild switch --flake "$flake_ref#default" --no-update-lock-file
 ```
 
 Check SSH and desktop behavior before rebooting to verify the kernel and SDDM. No copy into `/etc/nixos` is needed.

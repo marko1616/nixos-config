@@ -232,12 +232,27 @@ console = Console()
 
 # All available actions with descriptions
 TASKS = [
+    {
+        "name": "build-dev",
+        "desc": "Build with the local private-config/ and keep flake.lock unchanged.",
+    },
+    {
+        "name": "switch-dev",
+        "desc": "Build and activate with the local private-config/.",
+    },
+    {
+        "name": "build-prod",
+        "desc": "Build using the repository inputs pinned in flake.lock.",
+    },
+    {
+        "name": "switch-prod",
+        "desc": "Build and activate using the repository inputs pinned in flake.lock.",
+    },
     {"name": "private-init", "desc": "Initialize private-config/ from the public template."},
     {"name": "private-switch", "desc": "Switch the private-config repository and lock its input."},
     {"name": "private-status", "desc": "Check the private-config repository and input mapping."},
     {"name": "private-edit-host", "desc": "Edit private-config/host.nix using EDITOR."},
     {"name": "private-import-hardware", "desc": "Import the current /etc/nixos hardware file."},
-    {"name": "private-build-local", "desc": "Build using local private-config/ without changing the lock."},
     {
         "name": "configure-ssh",
         "desc": "Import public keys for one account, using IPv4 only.",
@@ -255,6 +270,55 @@ TASKS = [
         "desc": "Exit the CLI tool.",
     },
 ]
+
+
+def run_nixos_rebuild(action, development):
+    """Build or activate NixOS with local or locked private configuration."""
+    environment = "dev" if development else "prod"
+    console.print(Panel.fit(
+        f"[cyan]Running NixOS {action} ({environment})[/cyan]"
+    ))
+
+    try:
+        from scripts.private_config import flake_ref, require_repo, require_prod_lock
+
+        command = [
+            "sudo",
+            "nixos-rebuild",
+            action,
+            "--flake",
+            flake_ref(ROOT) + "#default",
+        ]
+
+        if http_proxy := os.environ.get("HTTP_PROXY"):
+            command.insert(1, f"HTTP_PROXY={http_proxy}")
+
+        if https_proxy := os.environ.get("HTTPS_PROXY"):
+            command.insert(1, f"HTTPS_PROXY={https_proxy}")
+
+        if development:
+            private_config = ROOT / "private-config"
+            require_repo(private_config)
+            command.extend([
+                "--override-input",
+                "private-config",
+                "path:" + str(private_config),
+                "--no-write-lock-file",
+            ])
+        else:
+            require_prod_lock(ROOT)
+            command.append("--no-update-lock-file")
+
+        subprocess.run(command, cwd=ROOT, check=True)
+        console.print(
+            f"[green]NixOS {action} ({environment}) completed.[/green]"
+        )
+    except (OSError, ValueError, subprocess.CalledProcessError) as exc:
+        console.print(
+            f"NixOS {action} ({environment}) failed: {exc}",
+            style="red",
+            markup=False,
+        )
 
 
 def read_public_keys(path):
@@ -431,7 +495,15 @@ def main_menu():
         ).ask()
 
         if confirm:
-            if selected.startswith("private-"):
+            if selected in {
+                "build-dev",
+                "switch-dev",
+                "build-prod",
+                "switch-prod",
+            }:
+                action, environment = selected.split("-", 1)
+                run_nixos_rebuild(action, environment == "dev")
+            elif selected.startswith("private-"):
                 from scripts.private_config import main as private_main
                 command = selected.removeprefix("private-")
                 arguments = [command]

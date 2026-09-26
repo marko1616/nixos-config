@@ -3,97 +3,138 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 
-// CPU and memory usage. A short interval keeps per-CPU hover details responsive.
+// Interval CPU averages and a memory snapshot; no blocking reads on the UI thread.
 Item {
+    id: root
     property real cpuUsage: 0
     property real memUsage: 0
+    property bool cpuReady: false
+    property bool memReady: false
+    property string cpuError: ""
+    property string memError: ""
     property var cpuCoreUsages: []
-
+    property var previousCpu: ({})
+    property real cpuUpdatedAt: 0
+    property real memUpdatedAt: 0
     property real memTotalKiB: 0
     property real memAvailableKiB: 0
     property real memUsedKiB: 0
-    property real memFileCacheKiB: 0
+    property real memPageCacheKiB: 0
     property real memBuffersKiB: 0
     property real memReclaimableKiB: 0
     property real swapTotalKiB: 0
     property real swapUsedKiB: 0
 
-    property real prevIdle: 0
-    property real prevTotal: 0
-    property var prevCoreIdle: []
-    property var prevCoreTotal: []
-
-    FileView { id: statFile; path: "/proc/stat" }
-    FileView { id: memFile; path: "/proc/meminfo" }
-
+    FileView {
+        id: statFile
+        path: "/proc/stat"
+        onLoaded: root.parseStat(text())
+        onLoadFailed: root.invalidateCpu("CPU sample unavailable")
+    }
+    FileView {
+        id: memFile
+        path: "/proc/meminfo"
+        onLoaded: root.parseMemory(text())
+        onLoadFailed: { root.memReady = false; root.memError = "Memory sample unavailable" }
+    }
     Timer {
         interval: 3000
         repeat: true
         running: true
-        onTriggered: refresh()
+        onTriggered: root.refresh()
     }
 
     function refresh() {
+        var now = Date.now()
+        if (cpuUpdatedAt > 0 && now - cpuUpdatedAt > 10000) invalidateCpu("CPU sample expired")
+        if (memUpdatedAt > 0 && now - memUpdatedAt > 10000) {
+            memReady = false
+            memError = "Memory sample expired"
+        }
         statFile.reload()
-        statFile.waitForJob()
-        var stat = statFile.text()
+        memFile.reload()
+    }
+
+    function invalidateCpu(message) {
+        cpuReady = false
+        cpuError = message
+        previousCpu = ({})
+        cpuCoreUsages = []
+    }
+
+    function cpuDelta(current, previous) {
+        if (!previous) return null
+        var total = 0, idle = 0
+        for (var i = 0; i < current.length; i++) {
+            var delta = current[i] - previous[i]
+            // Includes iowait rollback and counter resets: establish a new baseline.
+            if (delta < 0) return null
+            total += delta
+            if (i === 3 || i === 4) idle += delta
+        }
+        return total > 0 ? Math.max(0, Math.min(100, (total - idle) / total * 100)) : null
+    }
+
+    function parseStat(stat) {
+        var samples = ({})
         var lines = stat.split("\n")
-        var nextCoreUsage = []
-        var nextCoreIdle = []
-        var nextCoreTotal = []
         for (var i = 0; i < lines.length; i++) {
             if (!/^cpu(?:\d+)?\s/.test(lines[i])) continue
             var parts = lines[i].trim().split(/\s+/)
-            var idle = parseInt(parts[4], 10) + parseInt(parts[5], 10) // idle + iowait
-            var total = 0
-            // guest/guest_nice are already included in user/nice.
-            // Sum user through steal, excluding those duplicate guest fields.
-            for (var k = 1; k < Math.min(parts.length, 9); k++) total += parseInt(parts[k], 10)
-
-            if (parts[0] === "cpu") {
-                if (prevTotal > 0) {
-                    var dTotal = total - prevTotal
-                    var dIdle = idle - prevIdle
-                    cpuUsage = dTotal > 0 ? Math.max(0, Math.min(100, (dTotal - dIdle) / dTotal * 100)) : 0
+            if (parts.length < 9 || samples[parts[0]]) { invalidateCpu("Invalid CPU sample"); return }
+            var counters = []
+            // user..steal only: guest and guest_nice are already included.
+            for (var k = 1; k <= 8; k++) {
+                if (!/^\d+$/.test(parts[k]) || !Number.isSafeInteger(Number(parts[k]))) {
+                    invalidateCpu("Invalid CPU sample")
+                    return
                 }
-                prevIdle = idle
-                prevTotal = total
-            } else {
-                var core = parseInt(parts[0].substring(3), 10)
-                var previousTotal = prevCoreTotal[core] || 0
-                var previousIdle = prevCoreIdle[core] || 0
-                var coreDelta = total - previousTotal
-                var coreIdleDelta = idle - previousIdle
-                nextCoreUsage[core] = previousTotal > 0 && coreDelta > 0
-                    ? Math.max(0, Math.min(100, (coreDelta - coreIdleDelta) / coreDelta * 100))
-                    : (cpuCoreUsages[core] || 0)
-                nextCoreIdle[core] = idle
-                nextCoreTotal[core] = total
+                counters.push(Number(parts[k]))
             }
+            samples[parts[0]] = counters
         }
-        cpuCoreUsages = nextCoreUsage
-        prevCoreIdle = nextCoreIdle
-        prevCoreTotal = nextCoreTotal
-
-        memFile.reload()
-        memFile.waitForJob()
-        var mem = memFile.text()
-        var values = ({})
-        var mlines = mem.split("\n")
-        for (var m = 0; m < mlines.length; m++) {
-            var match = mlines[m].match(/^([^:]+):\s+(\d+)/)
-            if (match) values[match[1]] = parseInt(match[2], 10)
+        if (!samples.cpu) { invalidateCpu("CPU sample unavailable"); return }
+        var usage = cpuDelta(samples.cpu, previousCpu.cpu)
+        cpuReady = usage !== null
+        cpuError = ""
+        if (cpuReady) cpuUsage = usage
+        var cores = []
+        for (var key in samples) {
+            if (key === "cpu") continue
+            cores[Number(key.substring(3))] = cpuDelta(samples[key], previousCpu[key])
         }
-        memTotalKiB = values.MemTotal || 0
-        memAvailableKiB = values.MemAvailable || 0
-        memUsedKiB = Math.max(0, memTotalKiB - memAvailableKiB)
-        memBuffersKiB = values.Buffers || 0
-        memReclaimableKiB = values.SReclaimable || 0
-        memFileCacheKiB = Math.max(0, (values.Cached || 0) + memReclaimableKiB - (values.Shmem || 0))
-        swapTotalKiB = values.SwapTotal || 0
-        swapUsedKiB = Math.max(0, swapTotalKiB - (values.SwapFree || 0))
-        if (memTotalKiB > 0) memUsage = memUsedKiB / memTotalKiB * 100
+        cpuCoreUsages = cores
+        previousCpu = samples
+        cpuUpdatedAt = Date.now()
     }
 
-    Component.onCompleted: refresh()
+    function parseMemory(mem) {
+        var values = Object.create(null)
+        var lines = mem.split("\n")
+        for (var i = 0; i < lines.length; i++) {
+            var match = lines[i].match(/^([^:]+):\s+(\d+)\s+kB\s*$/)
+            if (match) values[match[1]] = Number(match[2])
+        }
+        var total = values.MemTotal, available = values.MemAvailable
+        var swapTotal = values.SwapTotal || 0, swapFree = values.SwapFree || 0
+        if (!Number.isSafeInteger(total) || total <= 0 || !Number.isSafeInteger(available)
+                || available > total || swapFree > swapTotal) {
+            memReady = false
+            memError = "Invalid memory sample"
+            return
+        }
+        memTotalKiB = total
+        memAvailableKiB = available
+        memUsedKiB = total - available
+        // Non-shared page cache and reclaimable slab are displayed separately.
+        memPageCacheKiB = Math.max(0, (values.Cached || 0) - (values.Shmem || 0))
+        memBuffersKiB = values.Buffers || 0
+        memReclaimableKiB = values.SReclaimable || 0
+        swapTotalKiB = swapTotal
+        swapUsedKiB = swapTotal - swapFree
+        memUsage = memUsedKiB / total * 100
+        memReady = true
+        memError = ""
+        memUpdatedAt = Date.now()
+    }
 }

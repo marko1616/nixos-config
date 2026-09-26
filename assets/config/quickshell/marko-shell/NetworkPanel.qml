@@ -11,7 +11,11 @@ PopoverBase {
     id: root
     popHeight: 420
     property string errorText: ""
-    property var bssidBySsid: ({})
+    property var apByNetwork: Object.create(null)
+    property int apGeneration: 0
+    property int apOperationGeneration: 0
+    property bool apBusy: false
+    property bool apRefreshQueued: false
     // The password field needs real keyboard input, which an ungrabbed popup does
     // not receive, so the popup takes the grab back while a prompt is visible.
     property bool pskActive: false
@@ -64,44 +68,113 @@ PopoverBase {
         return fields
     }
 
-    function updateBssidMap(output) {
-        var result = ({})
-        var strongest = ({})
+    function apKey(device, ssid) {
+        return JSON.stringify([device, ssid])
+    }
+
+    function parseApSnapshot(output) {
+        var result = Object.create(null)
         var lines = output.split("\n")
         for (var i = 0; i < lines.length; i++) {
             if (!lines[i]) continue
             var fields = parseNmcliFields(lines[i])
-            if (fields.length < 3 || !fields[1]) continue
-            var strength = parseInt(fields[2], 10) || 0
-            if (strongest[fields[1]] === undefined || strength > strongest[fields[1]]) {
-                strongest[fields[1]] = strength
-                result[fields[1]] = fields[0]
+            if (fields.length !== 5 || !fields[0]
+                    || !/^(?:[0-9a-fA-F]{2}:){5}[0-9a-fA-F]{2}$/.test(fields[2])
+                    || !/^\d+$/.test(fields[4])) return null
+            if (!fields[3]) continue // Hidden SSIDs cannot be matched reliably.
+            var strength = Number(fields[4])
+            if (strength > 100 || (fields[1] !== "" && fields[1] !== "*")) return null
+            var key = apKey(fields[0], fields[3])
+            var entry = result[key]
+            if (!entry) entry = { strongest: "", strength: -1, connected: "", activeCount: 0 }
+            if (strength > entry.strength) {
+                entry.strongest = fields[2]
+                entry.strength = strength
             }
+            if (fields[1] === "*") {
+                entry.connected = fields[2]
+                entry.activeCount++
+            }
+            result[key] = entry
         }
-        bssidBySsid = result
+        return result
+    }
+
+    function apLabel(network) {
+        var device = network.device ? network.device.name : ""
+        var entry = apByNetwork[apKey(device, network.name)]
+        var prefix = network.connected ? "Connected AP · " : "Strongest visible AP · "
+        var bssid = entry ? (network.connected
+            ? (entry.activeCount === 1 ? entry.connected : "") : entry.strongest) : ""
+        return prefix + (bssid || "Unavailable")
+    }
+
+    function requestApInfo(invalidate) {
+        if (invalidate) {
+            apGeneration++
+            apByNetwork = Object.create(null)
+        }
+        apRefreshQueued = root.visible && Networking.wifiEnabled
+        Qt.callLater(pumpApInfo)
+    }
+
+    function pumpApInfo() {
+        if (apBusy || apInfo.running || !apRefreshQueued) return
+        if (!root.visible || !Networking.wifiEnabled) { apRefreshQueued = false; return }
+        apRefreshQueued = false
+        apOperationGeneration = apGeneration
+        apBusy = true
+        apWatchdog.restart()
+        apInfo.running = true
+    }
+
+    function finishApInfo(success, output) {
+        if (!apBusy) return
+        apBusy = false
+        apWatchdog.stop()
+        if (apOperationGeneration === apGeneration && root.visible && Networking.wifiEnabled) {
+            var snapshot = success ? parseApSnapshot(output) : null
+            apByNetwork = snapshot || Object.create(null)
+        }
+        Qt.callLater(pumpApInfo)
     }
 
     Connections {
         target: root
-        function onVisibleChanged() {
-            if (root.visible) apInfo.exec(apInfo.command)
-        }
+        function onVisibleChanged() { root.requestApInfo(true) }
+    }
+    Connections {
+        target: Networking
+        function onWifiEnabledChanged() { root.requestApInfo(true) }
     }
 
     Process {
         id: apInfo
-        command: ["nmcli", "-t", "--escape", "yes", "-f", "BSSID,SSID,SIGNAL",
+        command: ["nmcli", "-t", "--escape", "yes", "-f", "DEVICE,IN-USE,BSSID,SSID,SIGNAL",
                   "device", "wifi", "list", "--rescan", "no"]
-        stdout: StdioCollector {
-            onStreamFinished: root.updateBssidMap(text)
+        environment: ({ "LC_ALL": "C" })
+        stdout: StdioCollector { id: apOutput }
+        onExited: function(code, status) { root.finishApInfo(code === 0 && status === 0, apOutput.text) }
+        onRunningChanged: {
+            if (!running) Qt.callLater(function() {
+                if (root.apBusy && !apInfo.running) root.finishApInfo(false, "")
+            })
         }
     }
-
+    Timer {
+        id: apWatchdog
+        interval: 5000
+        onTriggered: {
+            root.apGeneration++
+            root.apByNetwork = Object.create(null)
+            apInfo.running = false
+        }
+    }
     Timer {
         interval: 10000
         repeat: true
-        running: root.visible
-        onTriggered: apInfo.exec(apInfo.command)
+        running: root.visible && Networking.wifiEnabled
+        onTriggered: root.requestApInfo(false)
     }
 
     ColumnLayout {
@@ -121,9 +194,10 @@ PopoverBase {
             Item { Layout.fillWidth: true }
             ModernSwitch {
                 id: wifiSwitch
-                checked: Networking.wifiEnabled
+                Accessible.name: "Wi-Fi"
+                backendChecked: Networking.wifiEnabled
                 enabled: Networking.wifiHardwareEnabled
-                onToggled: function(nextChecked) { Networking.wifiEnabled = nextChecked }
+                onToggleRequested: function(nextChecked) { Networking.wifiEnabled = nextChecked }
             }
         }
 
@@ -185,6 +259,7 @@ PopoverBase {
 
                 Connections {
                     target: networkRow.modelData
+                    function onConnectedChanged() { root.requestApInfo(true) }
                     function onConnectionFailed(reason) {
                         networkRow.showPsk = reason === ConnectionFailReason.NoSecrets
                                              && root.acceptsPsk(networkRow.modelData)
@@ -200,7 +275,7 @@ PopoverBase {
                 Connections {
                     target: root
                     function onVisibleChanged() {
-                        if (!root.visible) {
+                        if (!root.visible && !root.remapping) {
                             networkRow.showPsk = false
                             root.pskActive = false
                             pskField.clear()
@@ -248,7 +323,7 @@ PopoverBase {
                             }
                             Text {
                                 Layout.fillWidth: true
-                                text: "BSSID " + (root.bssidBySsid[modelData.name] || "Unavailable")
+                                text: root.apLabel(modelData)
                                 color: Theme.border
                                 font.family: Theme.fontFamily
                                 font.pixelSize: Theme.fontSize - 3
