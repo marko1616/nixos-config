@@ -17,7 +17,9 @@ PopupWindow {
     property real revealProgress: expanded ? 1 : 0
 
     implicitWidth: Theme.popupWidth
-    implicitHeight: popHeight
+    // The popup surface reaches back across the visual gap to the bar. Keep the
+    // card inset so its appearance and content geometry remain unchanged.
+    implicitHeight: popHeight + Theme.popupGap
     color: "transparent"
     grabFocus: true
 
@@ -104,7 +106,9 @@ PopupWindow {
             anchor.edges = Edges.Bottom
             anchor.gravity = Edges.Bottom
             anchor.adjustment = PopupAdjustment.Slide | PopupAdjustment.Flip
-            anchor.margins.bottom = -Theme.popupGap
+            // The popup's transparent hover bridge occupies this gap; the
+            // visible card itself is inset by the same amount below.
+            anchor.margins.bottom = 0
         }
     }
 
@@ -118,31 +122,36 @@ PopupWindow {
         }
     }
 
-    Rectangle {
+    Item {
         anchors.fill: parent
-        radius: Theme.radius
-        color: Theme.popupBg
-        border.width: Theme.borderWidth
-        border.color: Theme.border
-        opacity: root.revealProgress
-        scale: 0.96 + root.revealProgress * 0.04
-        transformOrigin: Item.TopRight
-        transform: Translate { y: (1 - root.revealProgress) * -8 }
-
-        // Passive hover tracking leaves clicks, selection and typing to the controls.
+        // Track the whole popup surface, including the transparent strip between
+        // the bar and card, so crossing the seam does not start leave-close.
         HoverHandler {
             id: popupPointer
             blocking: false
             onHoveredChanged: root.cancelLeaveClose()
         }
 
-        FocusScope {
-            id: contents
+        Rectangle {
             anchors.fill: parent
-            focus: true
-            Keys.onEscapePressed: function(event) {
-                root.closePopup()
-                event.accepted = true
+            anchors.topMargin: Theme.popupGap
+            radius: Theme.radius
+            color: Theme.popupBg
+            border.width: Theme.borderWidth
+            border.color: Theme.border
+            opacity: root.revealProgress
+            scale: 0.96 + root.revealProgress * 0.04
+            transformOrigin: Item.TopRight
+            transform: Translate { y: (1 - root.revealProgress) * -8 }
+
+            FocusScope {
+                id: contents
+                anchors.fill: parent
+                focus: true
+                Keys.onEscapePressed: function(event) {
+                    root.closePopup()
+                    event.accepted = true
+                }
             }
         }
     }
