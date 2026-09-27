@@ -25,17 +25,8 @@ QtObject {
     readonly property int popupWidth: 400
     readonly property int popupMaxHeight: 560
     readonly property int popupGap: 8
+    readonly property int popupLeaveDelay: 500
     readonly property int motionDuration: 180
-
-    // Popups are mapped without a Wayland pointer grab, so a click is never
-    // intercepted. Dismissal happens by hover instead: once the pointer has left
-    // both the bar and the popup for this long, the popup closes.
-    readonly property int popupLeaveDelay: 300
-
-    // Fall back to a grabbed popup (Qt::Popup), which the compositor dismisses on
-    // the first click outside. That click is then the compositor's to handle, and
-    // the popup cannot animate out.
-    readonly property bool popupGrabFocus: false
 
     readonly property color controlOff: "#16161e"
     readonly property color controlThumb: "#ffffff"

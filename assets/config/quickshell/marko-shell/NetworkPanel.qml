@@ -5,13 +5,14 @@ import QtQml
 import Quickshell
 import Quickshell.Io
 import Quickshell.Networking
+import "WifiData.js" as WifiData
 
 // Wi-Fi management popover, anchored below the network pill.
 PopoverBase {
     id: root
     popHeight: 420
     property string errorText: ""
-    property var connectedApByDevice: Object.create(null)
+    property var accessPointsByDevice: Object.create(null)
     property int apGeneration: 0
     property int apOperationGeneration: 0
     property bool apBusy: false
@@ -20,14 +21,7 @@ PopoverBase {
     property int apDeviceIndex: 0
     property var apPending: Object.create(null)
     property string apDevice: ""
-    // The password field needs real keyboard input, which an ungrabbed popup does
-    // not receive, so the popup takes the grab back while a prompt is visible.
-    property bool pskActive: false
-    needsKeyboard: pskActive
-
-    onPskActiveChanged: {
-        if (pskActive) remap()
-    }
+    property string promptKey: ""
 
     // The network list alone does not enable active Wi-Fi scanning.
     // Only the visible popup owns these bindings; hiding it restores prior values.
@@ -50,70 +44,49 @@ PopoverBase {
             || network.security === WifiSecurityType.Sae
     }
 
-    function decodeIwSsid(value) {
-        var encoded = ""
-        for (var i = 0; i < value.length; i++) {
-            var code = value.charCodeAt(i)
-            if (value[i] === "\\") {
-                if (i + 3 >= value.length || value[i + 1] !== "x"
-                        || !/^[0-9a-fA-F]{2}$/.test(value.slice(i + 2, i + 4))) return null
-                encoded += "%" + value.slice(i + 2, i + 4)
-                i += 3
-            } else {
-                if (code > 0x7f) return null
-                var hex = code.toString(16)
-                encoded += "%" + (hex.length === 1 ? "0" : "") + hex
-            }
+    function requestConnect(network) {
+        if (WifiConnection.busy || network.stateChanging) return
+        errorText = ""
+        if (!network.known && acceptsPsk(network)) {
+            promptKey = WifiData.networkKey(network)
+            return
         }
-        try {
-            return decodeURIComponent(encoded)
-        } catch (error) {
-            return null
-        }
+        promptKey = ""
+        WifiConnection.connectNetwork(network)
     }
 
-    function parseLinkSnapshot(device, output) {
-        var bssid = ""
-        var ssid = ""
-        var disconnected = false
-        var lines = output.split("\n")
-        for (var i = 0; i < lines.length; i++) {
-            var line = lines[i].replace(/\r$/, "")
-            if (!line) continue
-            if (/^\s*Not connected\.$/.test(line)) {
-                disconnected = true
-                continue
-            }
-            var connected = line.match(/^\s*Connected to ((?:[0-9a-fA-F]{2}:){5}[0-9a-fA-F]{2}) \(on ([^)]+)\)$/)
-            if (connected) {
-                if (connected[2] !== device || bssid) return null
-                bssid = connected[1]
-                continue
-            }
-            var ssidLine = line.match(/^\s*SSID: (.*)$/)
-            if (ssidLine) {
-                if (ssid) return null
-                ssid = decodeIwSsid(ssidLine[1])
-                if (ssid === null) return null
-            }
-        }
-        if (disconnected) return bssid || ssid ? null : ({ connected: false })
-        if (!bssid || !ssid) return null
-        return { connected: true, bssid: bssid, ssid: ssid }
+    function submitPassword(network, password) {
+        if (WifiConnection.busy || network.stateChanging || !WifiData.validPassword(password)) return
+        errorText = ""
+        WifiConnection.connectNetwork(network, password)
+        promptKey = ""
     }
 
-    function apLabel(network) {
-        if (!network.connected) return ""
-        var device = network.device ? network.device.name : ""
-        var entry = connectedApByDevice[device]
-        var bssid = entry && entry.ssid === network.name ? entry.bssid : ""
-        return "BSSID · " + (bssid || "Unavailable")
+    Connections {
+        target: WifiConnection
+        function onFinished(key, success, message, needsPassword) {
+            root.requestApInfo(true)
+            if (!root.visible) return
+            root.errorText = message
+            if (!needsPassword || !Networking.wifiEnabled) return
+            var devices = Networking.devices.values
+            for (var i = 0; i < devices.length; i++) {
+                if (devices[i].type !== DeviceType.Wifi) continue
+                var networks = devices[i].networks.values
+                for (var j = 0; j < networks.length; j++) {
+                    var network = networks[j]
+                    if (WifiData.networkKey(network) !== key || network.connected) continue
+                    if (root.acceptsPsk(network)) root.promptKey = key
+                    else root.errorText = "Configure this authentication method in Advanced settings."
+                }
+            }
+        }
     }
 
     function requestApInfo(invalidate) {
         if (invalidate) {
             apGeneration++
-            connectedApByDevice = Object.create(null)
+            accessPointsByDevice = Object.create(null)
         }
         apRefreshQueued = root.visible && Networking.wifiEnabled
         Qt.callLater(pumpApInfo)
@@ -141,13 +114,16 @@ PopoverBase {
             return
         }
         if (apDeviceIndex >= apDevices.length) {
-            connectedApByDevice = apPending
+            accessPointsByDevice = apPending
             apBusy = false
             Qt.callLater(pumpApInfo)
             return
         }
         apDevice = apDevices[apDeviceIndex]
-        apInfo.command = ["iw", "dev", apDevice, "link"]
+        // QuickShell owns scanning; read NetworkManager's current cache only.
+        apInfo.command = ["nmcli", "--terse", "--escape", "no", "--colors", "no",
+                          "--fields", "IN-USE,SSID-HEX,BSSID,SIGNAL",
+                          "device", "wifi", "list", "ifname", apDevice, "--rescan", "no"]
         apWatchdog.restart()
         apInfo.running = true
     }
@@ -161,21 +137,27 @@ PopoverBase {
             Qt.callLater(pumpApInfo)
             return
         }
-        var snapshot = success ? parseLinkSnapshot(apDevice, output) : null
-        if (snapshot && snapshot.connected) {
-            apPending[apDevice] = { ssid: snapshot.ssid, bssid: snapshot.bssid }
-        }
+        if (success) apPending[apDevice] = WifiData.parseAccessPoints(output)
         apDeviceIndex++
         Qt.callLater(startNextApInfo)
     }
 
     Connections {
         target: root
-        function onVisibleChanged() { root.requestApInfo(true) }
+        function onVisibleChanged() {
+            root.requestApInfo(true)
+            if (!root.visible) {
+                root.promptKey = ""
+                root.errorText = ""
+            }
+        }
     }
     Connections {
         target: Networking
-        function onWifiEnabledChanged() { root.requestApInfo(true) }
+        function onWifiEnabledChanged() {
+            root.requestApInfo(true)
+            if (!Networking.wifiEnabled) root.promptKey = ""
+        }
     }
 
     Process {
@@ -195,7 +177,7 @@ PopoverBase {
         interval: 5000
         onTriggered: {
             root.apGeneration++
-            root.connectedApByDevice = Object.create(null)
+            root.accessPointsByDevice = Object.create(null)
             root.apRefreshQueued = root.visible && Networking.wifiEnabled
             apInfo.running = false
             apKillWatchdog.restart()
@@ -263,6 +245,7 @@ PopoverBase {
         }
 
         ListView {
+            id: networkList
             Layout.fillWidth: true
             Layout.fillHeight: true
             clip: true
@@ -288,7 +271,23 @@ PopoverBase {
             delegate: Rectangle {
                 id: networkRow
                 required property var modelData
-                property bool showPsk: false
+                required property int index
+                readonly property string networkKey: WifiData.networkKey(modelData)
+                readonly property bool showPsk: root.promptKey === networkKey
+                readonly property bool connecting: WifiConnection.busy && WifiConnection.targetKey === networkKey
+
+                onShowPskChanged: {
+                    if (!showPsk) {
+                        pskField.clear()
+                        pskField.focus = false
+                    } else {
+                        Qt.callLater(function() {
+                            if (!networkRow.showPsk || !root.visible) return
+                            networkList.positionViewAtIndex(networkRow.index, ListView.Contain)
+                            pskField.forceActiveFocus(Qt.OtherFocusReason)
+                        })
+                    }
+                }
 
                 width: ListView.view.width
                 height: col.implicitHeight + 16
@@ -297,27 +296,9 @@ PopoverBase {
 
                 Connections {
                     target: networkRow.modelData
-                    function onConnectedChanged() { root.requestApInfo(true) }
-                    function onConnectionFailed(reason) {
-                        networkRow.showPsk = reason === ConnectionFailReason.NoSecrets
-                                             && root.acceptsPsk(networkRow.modelData)
-                        root.errorText = networkRow.showPsk
-                            ? "Password required or rejected. Please try again."
-                            : (reason === ConnectionFailReason.NoSecrets
-                                ? "Configure this authentication method in Advanced settings."
-                                : "Connection failed: " + ConnectionFailReason.toString(reason))
-                        root.pskActive = networkRow.showPsk
-                    }
-                }
-
-                Connections {
-                    target: root
-                    function onVisibleChanged() {
-                        if (!root.visible && !root.remapping) {
-                            networkRow.showPsk = false
-                            root.pskActive = false
-                            pskField.clear()
-                        }
+                    function onConnectedChanged() {
+                        root.requestApInfo(true)
+                        if (networkRow.modelData.connected && networkRow.showPsk) root.promptKey = ""
                     }
                 }
 
@@ -361,8 +342,7 @@ PopoverBase {
                             }
                             Text {
                                 Layout.fillWidth: true
-                                visible: modelData.connected
-                                text: root.apLabel(modelData)
+                                text: WifiData.apLabel(modelData, root.accessPointsByDevice)
                                 color: Theme.border
                                 font.family: Theme.fontFamily
                                 font.pixelSize: Theme.fontSize - 3
@@ -370,17 +350,15 @@ PopoverBase {
                             }
                         }
                         TextButton {
-                            visible: !modelData.connected
-                            text: "Connect"
-                            onClicked: {
-                                root.errorText = ""
-                                showPsk = false
-                                root.pskActive = false
-                                modelData.connect()
-                            }
+                            objectName: "connect-" + networkRow.index
+                            visible: !modelData.connected && !networkRow.showPsk
+                            enabled: Networking.wifiEnabled && !WifiConnection.busy && !modelData.stateChanging
+                            text: networkRow.connecting || modelData.stateChanging ? "Connecting…" : "Connect"
+                            onClicked: root.requestConnect(modelData)
                         }
                         TextButton {
                             visible: modelData.connected
+                            enabled: !WifiConnection.busy && !modelData.stateChanging
                             text: "Disconnect"
                             onClicked: modelData.disconnect()
                         }
@@ -390,20 +368,25 @@ PopoverBase {
                         Layout.fillWidth: true
                         visible: showPsk
                         spacing: 8
-                        TextField {
+                        PasswordField {
                             id: pskField
+                            objectName: "password-" + networkRow.index
                             Layout.fillWidth: true
-                            placeholderText: "Password"
-                            echoMode: TextInput.Password
+                            enabled: !WifiConnection.busy && !modelData.stateChanging
+                            onAccepted: root.submitPassword(modelData, text)
                         }
                         TextButton {
+                            objectName: "submit-" + networkRow.index
                             text: "Connect"
+                            enabled: !WifiConnection.busy && !modelData.stateChanging
+                                     && WifiData.validPassword(pskField.text)
+                            onClicked: root.submitPassword(modelData, pskField.text)
+                        }
+                        TextButton {
+                            text: "Cancel"
                             onClicked: {
+                                root.promptKey = ""
                                 root.errorText = ""
-                                modelData.connectWithPsk(pskField.text)
-                                pskField.clear()
-                                showPsk = false
-                                root.pskActive = false
                             }
                         }
                     }

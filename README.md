@@ -10,9 +10,9 @@ Niri, SDDM / Pixie, QuickShell (marko-shell bar), Wofi, Kitty and Mako with Toky
 
 The bar is the QuickShell configuration in `assets/config/quickshell/marko-shell/`, installed to `~/.config/quickshell/marko-shell`.
 
-The workspace indicator marks urgency with an orange dot. Connected Wi-Fi rows show the BSSID reported by the kernel association through the installed `iw` utility; the SSID from the same association must match the QuickShell row, so nearby APs with the same name cannot be mislabelled. Disconnected rows do not infer an AP address. Legacy Waybar, bzmenu and networkmanager_dmenu are no longer installed by this configuration.
+The workspace indicator marks urgency with an orange dot. Wi-Fi rows read BSSIDs from NetworkManager's cached scan results, so disconnected networks show the strongest visible access point as well as the number of additional matches. The active association is only shown when the scan identifies exactly one active BSSID for that device and SSID. Password entry uses the shell's own NetworkManager activation helper, so clicking Connect does not open a second system password dialog. Legacy Waybar, bzmenu and networkmanager_dmenu are no longer installed by this configuration.
 
-The skinned Qt controls support keyboard input when the popup has keyboard focus. Default hover-dismiss popups remain grab-free; `Theme.popupGrabFocus` is the existing opt-in fallback, with compositor-driven outside-click dismissal.
+Interactive panels use focused `PopupWindow`s. Before showing a popup, the bar commits its on-demand layer-shell keyboard permission so Niri can grant keyboard input to Wi-Fi, Bluetooth, audio and power controls; closing releases that permission. Panels close after the pointer leaves both the bar and popup for 500 ms, with re-entry cancelling dismissal. Outside clicks and Escape also close them. Adjust `popupLeaveDelay` in `Theme.qml` to change the delay. The borderless password field vertically centres its text, placeholder and caret. Tooltips remain non-interactive and do not take the focus grab.
 
 ## Tools
 

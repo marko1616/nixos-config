@@ -17,7 +17,10 @@
     xwayland-satellite
     wl-clipboard
     quickshell
-    iw # Supplies the kernel association query used by the QuickShell Wi-Fi panel.
+    networkmanager # nmcli supplies cached AP/BSSID scan results for the shell.
+    (writeShellScriptBin "marko-wifi-connect" ''
+      exec ${python3.withPackages (ps: [ ps.dbus-next ])}/bin/python3 ${../scripts/marko_wifi_connect.py}
+    '')
     networkmanagerapplet # Provides nm-connection-editor for Advanced settings.
   ];
 }

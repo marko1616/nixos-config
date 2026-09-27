@@ -10,9 +10,9 @@ Niri、SDDM / Pixie、QuickShell（marko-shell 顶栏）、Wofi、Kitty、Mako�
 
 顶栏为 `assets/config/quickshell/marko-shell/` 中的 QuickShell 配置，安装到 `~/.config/quickshell/marko-shell`。
 
-工作区用橙色圆点提示 urgency。已连接的 Wi-Fi 行通过安装的 `iw` 工具读取内核关联状态中的 BSSID，并要求同一状态中的 SSID 与 QuickShell 行一致，避免把同名邻近 AP 错配到当前网络；未连接行不再推测 AP 地址。本配置不再安装旧 Waybar、bzmenu 和 networkmanager_dmenu。
+工作区用橙色圆点提示 urgency。Wi-Fi 行从 NetworkManager 的缓存扫描结果读取 BSSID，因此未连接的网络也会显示当前可见信号最强的 AP，并标出其余同名 AP 的数量。已连接行只有在扫描结果为该设备和 SSID 找到唯一活动 BSSID 时才显示活动地址。密码输入由顶栏自己的 NetworkManager 连接助手处理，点击 Connect 不会再打开第二个系统密码窗口。本配置不再安装旧 Waybar、bzmenu 和 networkmanager_dmenu。
 
-换肤后的 Qt 控件在弹窗取得键盘焦点时支持键盘操作；默认悬停关闭弹窗仍不 grab。现有 `Theme.popupGrabFocus` 可切回 grab 模式，但外部点击关闭将由合成器处理。
+可交互面板统一使用带焦点的 `PopupWindow`。显示弹窗前，顶栏先提交 layer-shell 的按需键盘权限，使 Niri 可以将键盘交给 Wi-Fi、蓝牙、音频和电源控件；关闭后释放该权限。鼠标离开顶栏和弹窗 500 毫秒后自动收起，移回时取消关闭；点击外部或按 Esc 也可关闭。延迟可在 `Theme.qml` 的 `popupLeaveDelay` 中调整。密码框保持无边框，文字、占位提示和光标垂直居中。提示框保持非交互，不抢占焦点。
 
 ## 工具
 

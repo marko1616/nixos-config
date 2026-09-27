@@ -1,5 +1,6 @@
 import QtQuick
 import Quickshell
+import Quickshell.Wayland
 import Quickshell.Networking
 import Quickshell.Bluetooth
 import Quickshell.Services.UPower
@@ -15,6 +16,17 @@ PanelWindow {
     color: "transparent"
     exclusiveZone: Theme.barHeight
     screen: modelData
+
+    // Niri only grants a popup's keyboard grab if its parent layer surface can
+    // receive the keyboard. Release that permission again after the popup closes.
+    WlrLayershell.keyboardFocus: Popover.current && Popover.current.anchorItem
+        && Popover.current.anchorItem.QsWindow.window === bar
+        ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
+
+    readonly property bool pointerOnBar: barPointer.hovered
+        || cpuPill.hovered || memPill.hovered || clockPill.hovered
+        || networkPill.hovered || bluetoothPill.hovered || audioPill.hovered
+        || batteryPill.hovered || powerPill.hovered
 
     SystemClock { id: clock; precision: SystemClock.Minutes }
 
@@ -49,15 +61,6 @@ PanelWindow {
                                 || bat.state === UPowerDeviceState.PendingCharge)
 
     property var profile: PowerProfiles.profile
-
-    // True while the pointer is somewhere over the bar. A popup is dismissed once
-    // the pointer has left both the bar and the popup itself.
-    readonly property bool pointerOnBar: barPointer.hovered
-        || cpuPill.hovered || memPill.hovered || clockPill.hovered
-        || networkPill.hovered || bluetoothPill.hovered || audioPill.hovered
-        || batteryPill.hovered || powerPill.hovered
-
-    onPointerOnBarChanged: Popover.setBarHover(bar.screen ? bar.screen.name : "", pointerOnBar)
 
     function showTrayMenu(item, icon) {
         if (!item.hasMenu) return
@@ -171,11 +174,7 @@ PanelWindow {
         anchors.leftMargin: 8
         anchors.rightMargin: 8
 
-        // Pointer tracking for hover dismissal. Declared in the container so that
-        // hovering any module below still counts as being on the bar.
-        HoverHandler {
-            id: barPointer
-        }
+        HoverHandler { id: barPointer; blocking: false }
 
         // ---- LEFT ----
         Row {
@@ -340,10 +339,10 @@ PanelWindow {
         }
     }
 
-    NetworkPanel { id: networkPopup; anchorItem: networkPill }
-    BluetoothPanel { id: bluetoothPopup; anchorItem: bluetoothPill }
-    AudioPanel { id: audioPopup; anchorItem: audioPill }
-    PowerPanel { id: powerPopup; anchorItem: powerPill }
+    NetworkPanel { id: networkPopup; anchorItem: networkPill; barHovered: bar.pointerOnBar }
+    BluetoothPanel { id: bluetoothPopup; anchorItem: bluetoothPill; barHovered: bar.pointerOnBar }
+    AudioPanel { id: audioPopup; anchorItem: audioPill; barHovered: bar.pointerOnBar }
+    PowerPanel { id: powerPopup; anchorItem: powerPill; barHovered: bar.pointerOnBar }
     HoverTooltip {
         anchorItem: cpuPill
         requestedVisible: cpuPill.hovered

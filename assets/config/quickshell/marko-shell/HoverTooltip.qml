@@ -9,6 +9,7 @@ PopupWindow {
     property var anchorItem: null
     property string text: ""
     property bool requestedVisible: false
+    readonly property bool shouldShow: requestedVisible && Popover.current === null
     property real revealProgress: 0
 
     implicitWidth: Math.min(440, label.implicitWidth + 24)
@@ -26,8 +27,8 @@ PopupWindow {
         }
     }
 
-    onRequestedVisibleChanged: {
-        if (requestedVisible) {
+    onShouldShowChanged: {
+        if (shouldShow) {
             hideTimer.stop()
             showTimer.restart()
         } else {
@@ -43,6 +44,7 @@ PopupWindow {
         id: showTimer
         interval: 400
         onTriggered: {
+            if (!root.shouldShow) return
             root.visible = true
             Qt.callLater(function() { root.revealProgress = 1 })
         }
