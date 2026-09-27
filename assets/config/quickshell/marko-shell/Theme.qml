@@ -5,7 +5,8 @@ import QtQuick
 QtObject {
     readonly property color fg: "#a9b1d6"
     readonly property color moduleBg: "#24283b"
-    readonly property color popupBg: "#1a1b26"
+    readonly property color popupBg: moduleBg
+    readonly property color surfaceActive: "#2f354f"
     readonly property color border: "#565f89"
 
     readonly property color blue: "#7aa2f7"
@@ -25,7 +26,13 @@ QtObject {
     readonly property int popupWidth: 400
     readonly property int popupMaxHeight: 560
     readonly property int popupGap: 8
+    readonly property real sdfSmoothing: 34
+    // The shader surface starts at a pill's bottom (y = 36), while the full bar
+    // ends at y = 40. This overlap makes its virtual bar plane meet that edge.
+    readonly property real sdfBarOverlap: 4
+    readonly property int sdfPadding: 44
     readonly property int popupLeaveDelay: 500
+    readonly property int popupSettleDuration: 900
     readonly property int motionDuration: 180
 
     readonly property color controlOff: "#16161e"

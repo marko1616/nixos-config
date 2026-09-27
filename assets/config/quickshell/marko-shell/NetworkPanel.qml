@@ -292,7 +292,7 @@ PopoverBase {
                 width: ListView.view.width
                 height: col.implicitHeight + 16
                 radius: Theme.radius - 2
-                color: modelData.connected ? Theme.moduleBg : "transparent"
+                color: modelData.connected ? Theme.surfaceActive : "transparent"
 
                 Connections {
                     target: networkRow.modelData

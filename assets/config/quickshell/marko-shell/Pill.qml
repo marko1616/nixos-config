@@ -17,8 +17,7 @@ Rectangle {
     implicitWidth: Math.max(contentRow.implicitWidth + 24, 32)
     radius: Theme.radius
     color: Theme.moduleBg
-    border.width: Theme.borderWidth
-    border.color: Theme.border
+    border.width: 0
 
     Row {
         id: contentRow

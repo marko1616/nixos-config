@@ -42,7 +42,7 @@ T.TextField {
 
     background: Rectangle {
         radius: Theme.radius - 2
-        color: control.activeFocus ? Theme.moduleBg : Theme.controlOff
+        color: control.activeFocus ? Theme.surfaceActive : Theme.controlOff
         border.width: 0
     }
 }

@@ -11,9 +11,11 @@ PopupWindow {
     property bool requestedVisible: false
     readonly property bool shouldShow: requestedVisible && Popover.current === null
     property real revealProgress: 0
+    readonly property real bodyWidth: Math.min(440, label.implicitWidth + 24)
+    readonly property real bodyHeight: label.implicitHeight + 16
 
-    implicitWidth: Math.min(440, label.implicitWidth + 24)
-    implicitHeight: label.implicitHeight + 16
+    implicitWidth: bodyWidth + Theme.sdfPadding * 2
+    implicitHeight: bodyHeight + Theme.popupGap
     color: "transparent"
     grabFocus: false
 
@@ -23,7 +25,7 @@ PopupWindow {
             anchor.edges = Edges.Bottom
             anchor.gravity = Edges.Bottom
             anchor.adjustment = PopupAdjustment.Slide | PopupAdjustment.Flip
-            anchor.margins.bottom = -Theme.popupGap
+            anchor.margins.bottom = 0
         }
     }
 
@@ -52,36 +54,53 @@ PopupWindow {
 
     Timer {
         id: hideTimer
-        interval: Theme.motionDuration
+        interval: Theme.popupSettleDuration
         onTriggered: root.visible = false
     }
 
     Behavior on revealProgress {
-        NumberAnimation {
-            duration: Theme.motionDuration
-            easing.type: Easing.OutCubic
+        SpringAnimation {
+            spring: 5.0
+            damping: 0.35
+            mass: 1.0
+            epsilon: 0.01
+            onRunningChanged: {
+                if (!running && root.visible && !root.shouldShow
+                        && root.revealProgress <= 0.01) {
+                    hideTimer.stop()
+                    root.visible = false
+                }
+            }
         }
     }
 
-    Rectangle {
+    SdfPopupBackground {
         anchors.fill: parent
-        radius: Theme.radius - 2
-        color: Theme.popupBg
-        border.width: Theme.borderWidth
-        border.color: Theme.border
-        opacity: root.revealProgress
-        scale: 0.96 + root.revealProgress * 0.04
-        transformOrigin: Item.TopRight
-        transform: Translate { y: (1 - root.revealProgress) * -6 }
+        revealProgress: root.revealProgress
+    }
 
-        Text {
-            id: label
-            anchors.centerIn: parent
-            text: root.text
-            color: Theme.fg
-            font.family: Theme.fontFamily
-            font.pixelSize: Theme.fontSize - 1
-            lineHeight: 1.15
+    Item {
+        anchors.top: parent.top
+        anchors.topMargin: Theme.popupGap
+        anchors.horizontalCenter: parent.horizontalCenter
+        width: root.bodyWidth
+        height: root.bodyHeight * Math.max(0, Math.min(1, root.revealProgress))
+        clip: true
+
+        Item {
+            width: root.bodyWidth
+            height: root.bodyHeight
+            y: (1 - root.revealProgress) * -6
+
+            Text {
+                id: label
+                anchors.centerIn: parent
+                text: root.text
+                color: Theme.fg
+                font.family: Theme.fontFamily
+                font.pixelSize: Theme.fontSize - 1
+                lineHeight: 1.15
+            }
         }
     }
 }

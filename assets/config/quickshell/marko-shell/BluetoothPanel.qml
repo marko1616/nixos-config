@@ -86,7 +86,7 @@ PopoverBase {
                 width: ListView.view.width
                 height: 48
                 radius: Theme.radius - 2
-                color: modelData.connected ? Theme.moduleBg : "transparent"
+                color: modelData.connected ? Theme.surfaceActive : "transparent"
 
                 RowLayout {
                     anchors.fill: parent

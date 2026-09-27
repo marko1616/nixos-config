@@ -13,7 +13,7 @@ PanelWindow {
 
     anchors { top: true; left: true; right: true }
     implicitHeight: Theme.barHeight
-    color: "transparent"
+    color: Theme.moduleBg
     exclusiveZone: Theme.barHeight
     screen: modelData
 
@@ -190,8 +190,7 @@ PanelWindow {
                 implicitWidth: Math.max(wsRow.implicitWidth + 16, 32)
                 radius: Theme.radius
                 color: Theme.moduleBg
-                border.width: Theme.borderWidth
-                border.color: Theme.border
+                border.width: 0
 
                 Row {
                     id: wsRow
@@ -247,8 +246,7 @@ PanelWindow {
                 height: Theme.barHeight - 8
                 radius: Theme.radius
                 color: Theme.moduleBg
-                border.width: Theme.borderWidth
-                border.color: Theme.border
+                border.width: 0
                 implicitWidth: Math.max(trayRow.implicitWidth + 16, 32)
                 visible: SystemTray.items.values.length > 0
 

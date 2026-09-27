@@ -13,10 +13,14 @@ PopupWindow {
     property bool opening: false
     property bool parentFrameStarted: false
     property bool closingForLeave: false
+    // A grabbed PopupWindow emits a synthetic leave on its parent bar when it
+    // maps. Hold the clicked anchor until the pointer reaches another known
+    // surface so that synthetic leave cannot immediately close the panel.
+    property bool anchorHoverHeld: false
     property bool expanded: false
     property real revealProgress: expanded ? 1 : 0
 
-    implicitWidth: Theme.popupWidth
+    implicitWidth: Theme.popupWidth + Theme.sdfPadding * 2
     // The popup surface reaches back across the visual gap to the bar. Keep the
     // card inset so its appearance and content geometry remain unchanged.
     implicitHeight: popHeight + Theme.popupGap
@@ -24,13 +28,22 @@ PopupWindow {
     grabFocus: true
 
     Behavior on revealProgress {
-        NumberAnimation {
-            duration: Theme.motionDuration
-            easing.type: Easing.OutCubic
+        SpringAnimation {
+            spring: 5.0
+            damping: 0.35
+            mass: 1.0
+            epsilon: 0.01
+            onRunningChanged: {
+                if (!running && !root.expanded && root.visible && !root.opening) {
+                    closeTimer.stop()
+                    root.visible = false
+                }
+            }
         }
     }
 
     function openPopup() {
+        anchorHoverHeld = true
         closeTimer.stop()
         closingForLeave = false
         if (visible) {
@@ -60,6 +73,7 @@ PopupWindow {
     function closePopup(immediate) {
         opening = false
         closingForLeave = false
+        anchorHoverHeld = false
         closeTimer.stop()
         expanded = false
         if (immediate) visible = false
@@ -78,13 +92,16 @@ PopupWindow {
 
     Timer {
         id: closeTimer
-        interval: Theme.motionDuration
+        // SpringAnimation has no fixed duration; this is a conservative unmap
+        // deadline after the visible damped motion has settled.
+        interval: Theme.popupSettleDuration
         onTriggered: root.visible = false
     }
 
     Timer {
         interval: Theme.popupLeaveDelay
-        running: root.visible && root.expanded && !root.barHovered && !popupPointer.hovered
+        running: root.visible && root.expanded && !root.anchorHoverHeld
+            && !root.barHovered && !popupPointer.hovered
         onTriggered: {
             root.closePopup()
             root.closingForLeave = true
@@ -98,7 +115,13 @@ PopupWindow {
             expanded = true
         }
     }
-    onBarHoveredChanged: cancelLeaveClose()
+    onBarHoveredChanged: {
+        // If the bar starts reporting hover again on a different item, the
+        // synthetic-leave hold is no longer needed.
+        if (anchorHoverHeld && barHovered && anchorItem && !anchorItem.hovered)
+            anchorHoverHeld = false
+        cancelLeaveClose()
+    }
 
     onAnchorItemChanged: {
         if (anchorItem) {
@@ -106,8 +129,6 @@ PopupWindow {
             anchor.edges = Edges.Bottom
             anchor.gravity = Edges.Bottom
             anchor.adjustment = PopupAdjustment.Slide | PopupAdjustment.Flip
-            // The popup's transparent hover bridge occupies this gap; the
-            // visible card itself is inset by the same amount below.
             anchor.margins.bottom = 0
         }
     }
@@ -116,6 +137,7 @@ PopupWindow {
         if (!visible) {
             opening = false
             closingForLeave = false
+            anchorHoverHeld = false
             closeTimer.stop()
             expanded = false
             if (Popover.current === root) Popover.current = null
@@ -129,24 +151,31 @@ PopupWindow {
         HoverHandler {
             id: popupPointer
             blocking: false
-            onHoveredChanged: root.cancelLeaveClose()
+            onHoveredChanged: {
+                if (hovered) root.anchorHoverHeld = false
+                root.cancelLeaveClose()
+            }
         }
 
-        Rectangle {
+        SdfPopupBackground {
             anchors.fill: parent
+            revealProgress: root.revealProgress
+        }
+
+        Item {
+            id: contentReveal
+            anchors.top: parent.top
             anchors.topMargin: Theme.popupGap
-            radius: Theme.radius
-            color: Theme.popupBg
-            border.width: Theme.borderWidth
-            border.color: Theme.border
-            opacity: root.revealProgress
-            scale: 0.96 + root.revealProgress * 0.04
-            transformOrigin: Item.TopRight
-            transform: Translate { y: (1 - root.revealProgress) * -8 }
+            anchors.horizontalCenter: parent.horizontalCenter
+            width: Theme.popupWidth
+            height: root.popHeight * Math.max(0, Math.min(1, root.revealProgress))
+            clip: true
 
             FocusScope {
                 id: contents
-                anchors.fill: parent
+                width: parent.width
+                height: root.popHeight
+                y: (1 - root.revealProgress) * -8
                 focus: true
                 Keys.onEscapePressed: function(event) {
                     root.closePopup()

@@ -33,7 +33,7 @@ PopoverBase {
                 Layout.preferredHeight: 36
                 Layout.maximumHeight: 36
                 radius: Theme.radius - 2
-                color: PowerProfiles.profile === profileEnum(modelData) ? Theme.moduleBg
+                color: PowerProfiles.profile === profileEnum(modelData) ? Theme.surfaceActive
                      : profileMouse.containsMouse ? Qt.rgba(0.48, 0.64, 0.97, 0.10)
                      : "transparent"
 
