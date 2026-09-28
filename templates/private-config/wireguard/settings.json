@@ -1,0 +1,12 @@
+{
+  "enable": false,
+  "address": "10.77.0.2/24",
+  "peers": [
+    {
+      "publicKey": "CHANGE_ME_PEER_PUBLIC_KEY",
+      "endpoint": "[2001:db8::1]:51820",
+      "allowedIPs": ["10.77.0.0/24"],
+      "persistentKeepalive": 25
+    }
+  ]
+}

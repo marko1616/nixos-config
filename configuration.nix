@@ -12,6 +12,7 @@ in
       ./desktop/niri.nix
       ./desktop/sddm-avatars.nix
       ./services/ssh.nix
+      ./services/wireguard.nix
     ];
 
   # Experimental features

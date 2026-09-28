@@ -22,5 +22,6 @@
       exec ${python3.withPackages (ps: [ ps.dbus-next ])}/bin/python3 ${../scripts/marko_wifi_connect.py}
     '')
     networkmanagerapplet # Provides nm-connection-editor for Advanced settings.
+    moonlight-qt
   ];
 }
