@@ -6,11 +6,11 @@ QtObject {
 
     function toggle(pop) {
         if (!pop) return
-        if (current === pop && (pop.opening || pop.expanded)) {
-            closeAll()
+        if (current === pop) {
+            if (!pop.closing && (pop.opening || pop.expanded)) pop.closePopup()
             return
         }
-        // Release the previous native popup grab before opening another panel.
+        // Unmap the previous overlay before opening a different panel.
         if (current && current !== pop) current.closePopup(true)
         current = pop
         pop.openPopup()
@@ -19,7 +19,6 @@ QtObject {
     function closeAll() {
         if (!current) return
         var pop = current
-        current = null
-        pop.closePopup(true)
+        pop.closePopup()
     }
 }

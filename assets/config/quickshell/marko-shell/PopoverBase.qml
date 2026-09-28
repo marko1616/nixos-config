@@ -1,31 +1,42 @@
 import QtQuick
 import Quickshell
+import Quickshell.Wayland
 
-// Interactive panels are Qt::Popup windows from their first map. Tooltips use
-// HoverTooltip instead; changing grabFocus on an already mapped window is too late.
-PopupWindow {
+// A full-screen, click-through-above-the-bar overlay can observe real pointer
+// departure without mistaking the focus transition on map for a bar leave.
+// The card and its dismiss area also share one keyboard-capable window.
+PanelWindow {
     id: root
     default property alias contentData: contents.data
     property var anchorItem: null
-    readonly property var nativeParent: anchorItem ? anchorItem.Window.window : null
+    property var anchorWindow: null
     property int popHeight: Theme.popupMaxHeight
     property bool barHovered: false
     property bool opening: false
-    property bool parentFrameStarted: false
-    property bool closingForLeave: false
-    // A grabbed PopupWindow emits a synthetic leave on its parent bar when it
-    // maps. Hold the clicked anchor until the pointer reaches another known
-    // surface so that synthetic leave cannot immediately close the panel.
-    property bool anchorHoverHeld: false
+    property bool closing: false
     property bool expanded: false
+    property bool leaveArmed: false
+    property real cardX: 0
     property real revealProgress: expanded ? 1 : 0
 
-    implicitWidth: Theme.popupWidth + Theme.sdfPadding * 2
-    // The popup surface reaches back across the visual gap to the bar. Keep the
-    // card inset so its appearance and content geometry remain unchanged.
-    implicitHeight: popHeight + Theme.popupGap
+    visible: false
+    screen: anchorWindow ? anchorWindow.screen : null
     color: "transparent"
-    grabFocus: true
+    // A zero exclusive zone still respects the bar's reserved space and shifts
+    // this full-screen overlay down by one bar height. Ignore it instead.
+    exclusionMode: ExclusionMode.Ignore
+    anchors { top: true; bottom: true; left: true; right: true }
+    WlrLayershell.layer: WlrLayer.Overlay
+    WlrLayershell.keyboardFocus: WlrKeyboardFocus.OnDemand
+    WlrLayershell.namespace: "marko-shell-popover"
+
+    // Painting may overlap the bottom of the bar, but pointer input there must
+    // still reach the bar. All below-bar clicks belong to this overlay.
+    mask: Region {
+        width: root.width
+        height: Theme.barMargin + Theme.barHeight
+        intersection: Intersection.Xor
+    }
 
     Behavior on revealProgress {
         SpringAnimation {
@@ -34,7 +45,8 @@ PopupWindow {
             mass: 1.0
             epsilon: 0.01
             onRunningChanged: {
-                if (!running && !root.expanded && root.visible && !root.opening) {
+                if (!running && root.closing && root.visible
+                        && root.revealProgress <= 0.01) {
                     closeTimer.stop()
                     root.visible = false
                 }
@@ -42,29 +54,28 @@ PopupWindow {
         }
     }
 
-    function openPopup() {
-        anchorHoverHeld = true
-        closeTimer.stop()
-        closingForLeave = false
-        if (visible) {
-            expanded = true
-            return
-        }
-        // Popover.current enables OnDemand on the bar. Wait for its surface
-        // commit before mapping the popup; otherwise Niri sees the old None
-        // permission and grants only a pointer grab, leaving typing in the app.
-        opening = true
-        parentFrameStarted = false
-        if (nativeParent) nativeParent.update()
-        else showPopup()
+    function updatePosition() {
+        if (!anchorItem || !anchorWindow) return
+        var center = anchorItem.mapToItem(anchorWindow.contentItem,
+                                          anchorItem.width / 2, 0).x
+        var inset = Theme.sdfPadding + Theme.barMargin + 8
+        var minX = inset
+        var maxX = Math.max(minX, width - Theme.popupWidth - inset)
+        cardX = Math.max(minX, Math.min(maxX, center - Theme.popupWidth / 2))
     }
 
-    function showPopup() {
-        opening = false
+    function openPopup() {
+        closeTimer.stop()
+        opening = true
+        closing = false
         expanded = false
+        leaveArmed = false
+        updatePosition()
         visible = true
         Qt.callLater(function() {
-            if (!root.visible) return
+            if (!root.visible || root.closing) return
+            root.updatePosition()
+            root.opening = false
             root.expanded = true
             contents.forceActiveFocus()
         })
@@ -72,90 +83,58 @@ PopupWindow {
 
     function closePopup(immediate) {
         opening = false
-        closingForLeave = false
-        anchorHoverHeld = false
-        closeTimer.stop()
+        if (immediate) {
+            visible = false
+            return
+        }
+        if (!visible || closing) return
+        closing = true
         expanded = false
-        if (immediate) visible = false
-        else if (visible) closeTimer.restart()
+        closeTimer.restart()
     }
 
-    Connections {
-        target: root.nativeParent
-        enabled: root.opening
-        // Ignore a previously queued swap: it may predate the permission change.
-        function onAfterAnimating() { root.parentFrameStarted = true }
-        function onFrameSwapped() {
-            if (root.opening && root.parentFrameStarted && Popover.current === root) root.showPopup()
+    onWidthChanged: { if (visible) updatePosition() }
+    onVisibleChanged: {
+        if (!visible) {
+            closeTimer.stop()
+            opening = false
+            closing = false
+            expanded = false
+            leaveArmed = false
+            if (Popover.current === root) Popover.current = null
         }
     }
 
     Timer {
         id: closeTimer
-        // SpringAnimation has no fixed duration; this is a conservative unmap
-        // deadline after the visible damped motion has settled.
+        // The spring normally unmaps on completion; this is a bounded fallback.
         interval: Theme.popupSettleDuration
         onTriggered: root.visible = false
     }
 
     Timer {
         interval: Theme.popupLeaveDelay
-        running: root.visible && root.expanded && !root.anchorHoverHeld
-            && !root.barHovered && !popupPointer.hovered
-        onTriggered: {
-            root.closePopup()
-            root.closingForLeave = true
-        }
+        running: root.visible && root.expanded && root.leaveArmed
+            && !root.barHovered && !popupPointer.hovered && !root.closing
+        onTriggered: root.closePopup()
     }
 
-    function cancelLeaveClose() {
-        if (closingForLeave && visible && (barHovered || popupPointer.hovered)) {
-            closeTimer.stop()
-            closingForLeave = false
-            expanded = true
-        }
-    }
-    onBarHoveredChanged: {
-        // If the bar starts reporting hover again on a different item, the
-        // synthetic-leave hold is no longer needed.
-        if (anchorHoverHeld && barHovered && anchorItem && !anchorItem.hovered)
-            anchorHoverHeld = false
-        cancelLeaveClose()
-    }
-
-    onAnchorItemChanged: {
-        if (anchorItem) {
-            anchor.item = anchorItem
-            anchor.edges = Edges.Bottom
-            anchor.gravity = Edges.Bottom
-            anchor.adjustment = PopupAdjustment.Slide | PopupAdjustment.Flip
-            anchor.margins.bottom = 0
-        }
-    }
-
-    onVisibleChanged: {
-        if (!visible) {
-            opening = false
-            closingForLeave = false
-            anchorHoverHeld = false
-            closeTimer.stop()
-            expanded = false
-            if (Popover.current === root) Popover.current = null
-        }
+    MouseArea {
+        anchors.fill: parent
+        hoverEnabled: true
+        acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
+        onPositionChanged: root.leaveArmed = true
+        // The outside click is consumed, as it was by the grabbed PopupWindow,
+        // but now it can play the same exit animation.
+        onClicked: root.closePopup()
     }
 
     Item {
-        anchors.fill: parent
-        // Track the whole popup surface, including the transparent strip between
-        // the bar and card, so crossing the seam does not start leave-close.
-        HoverHandler {
-            id: popupPointer
-            blocking: false
-            onHoveredChanged: {
-                if (hovered) root.anchorHoverHeld = false
-                root.cancelLeaveClose()
-            }
-        }
+        id: cardSurface
+        x: root.cardX - Theme.sdfPadding
+        y: Theme.barMargin + Theme.barHeight - Theme.sdfBarOverlap
+        width: Theme.popupWidth + Theme.sdfPadding * 2
+        height: root.popHeight + Theme.popupGap
 
         SdfPopupBackground {
             anchors.fill: parent
@@ -163,23 +142,41 @@ PopupWindow {
         }
 
         Item {
-            id: contentReveal
-            anchors.top: parent.top
-            anchors.topMargin: Theme.popupGap
-            anchors.horizontalCenter: parent.horizontalCenter
+            id: hitSurface
+            x: Theme.sdfPadding
             width: Theme.popupWidth
-            height: root.popHeight * Math.max(0, Math.min(1, root.revealProgress))
-            clip: true
+            height: root.popHeight + Theme.popupGap
 
-            FocusScope {
-                id: contents
+            HoverHandler {
+                id: popupPointer
+                blocking: false
+                onHoveredChanged: { if (hovered) root.leaveArmed = true }
+            }
+
+            MouseArea {
+                anchors.fill: parent
+                acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
+                onClicked: function(mouse) { mouse.accepted = true }
+            }
+
+            Item {
+                id: contentReveal
+                y: Theme.popupGap
                 width: parent.width
-                height: root.popHeight
-                y: (1 - root.revealProgress) * -8
-                focus: true
-                Keys.onEscapePressed: function(event) {
-                    root.closePopup()
-                    event.accepted = true
+                height: root.popHeight * Math.max(0, Math.min(1, root.revealProgress))
+                clip: true
+
+                FocusScope {
+                    id: contents
+                    width: parent.width
+                    height: root.popHeight
+                    y: (1 - root.revealProgress) * -8
+                    focus: true
+                    enabled: !root.closing
+                    Keys.onEscapePressed: function(event) {
+                        root.closePopup()
+                        event.accepted = true
+                    }
                 }
             }
         }

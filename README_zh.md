@@ -10,9 +10,11 @@ Niri、SDDM / Pixie、QuickShell（marko-shell 顶栏）、Wofi、Kitty、Mako�
 
 顶栏为 `assets/config/quickshell/marko-shell/` 中的 QuickShell 配置，安装到 `~/.config/quickshell/marko-shell`。
 
+Fcitx5 经典界面的候选窗默认使用 `assets/config/fcitx5/marko-shell/` 主题；Home Manager 还会将其链接到 `~/.local/share/fcitx5/themes/marko-shell/`，使未从整合包装器启动的 Fcitx 也能发现主题。主题以 Tokyo Night 配色和 SVG 圆角匹配顶栏。现有的 `~/.config/fcitx5/conf/classicui.conf` 优先于系统默认设置：在「Fcitx5 配置 → 附加组件 → 经典用户界面」中，为 Theme 选择「Marko Shell」（若跟随系统明暗配色，Dark Theme 也选它）。激活后若仍看不到主题，先注销并重新登录再检查。经典界面主题不能为候选窗添加动画，QuickShell 弹窗动画也不会作用于 Fcitx5。
+
 工作区用橙色圆点提示 urgency。Wi-Fi 行从 NetworkManager 的缓存扫描结果读取 BSSID，因此未连接的网络也会显示当前可见信号最强的 AP，并标出其余同名 AP 的数量。已连接行只有在扫描结果为该设备和 SSID 找到唯一活动 BSSID 时才显示活动地址。密码输入由顶栏自己的 NetworkManager 连接助手处理，点击 Connect 不会再打开第二个系统密码窗口。本配置不再安装旧 Waybar、bzmenu 和 networkmanager_dmenu。
 
-可交互面板统一使用带焦点的 `PopupWindow`。显示弹窗前，顶栏先提交 layer-shell 的按需键盘权限，使 Niri 可以将键盘交给 Wi-Fi、蓝牙、音频和电源控件；关闭后释放该权限。鼠标离开顶栏和弹窗 500 毫秒后自动收起，移回时取消关闭；点击外部或按 Esc 也可关闭。延迟可在 `Theme.qml` 的 `popupLeaveDelay` 中调整。密码框保持无边框，文字、占位提示和光标垂直居中。提示框保持非交互，不抢占焦点。
+可交互面板使用能接收键盘输入的透明覆盖层。输入区域遮罩让顶栏继续接收鼠标事件，同时观察顶栏下方的移动和外部点击。鼠标离开顶栏与面板 500 毫秒后开始单向退出动画；一旦开始，移回也不会倒放复原。外部点击会被消耗并播放退出动画，Esc 也会关闭面板。顶栏与面板共用提亮的底色，细描边沿融合后的 SDF 外轮廓绘制。延迟可在 `Theme.qml` 的 `popupLeaveDelay` 中调整。密码框保持无边框，文字、占位提示和光标垂直居中。提示框保持非交互，不抢占键盘焦点。
 
 ## 工具
 

@@ -13,7 +13,7 @@ Rectangle {
     signal scrolledUp()
     signal scrolledDown()
 
-    height: Theme.barHeight - 8
+    height: Theme.barHeight - Theme.pillInset * 2
     implicitWidth: Math.max(contentRow.implicitWidth + 24, 32)
     radius: Theme.radius
     color: Theme.moduleBg

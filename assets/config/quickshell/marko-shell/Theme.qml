@@ -1,13 +1,15 @@
 pragma Singleton
 import QtQuick
 
-// Tokyo Night (Storm) palette, matching the Wofi / Mako / SDDM theme.
+// Tokyo Night-derived palette. Lift the shell surface above the wallpaper
+// while keeping the bar and its SDF popovers on one exact base color.
 QtObject {
     readonly property color fg: "#a9b1d6"
-    readonly property color moduleBg: "#24283b"
+    readonly property color moduleBg: "#30364f"
     readonly property color popupBg: moduleBg
-    readonly property color surfaceActive: "#2f354f"
+    readonly property color surfaceActive: "#414966"
     readonly property color border: "#565f89"
+    readonly property color shellOutline: "#7480a8"
 
     readonly property color blue: "#7aa2f7"
     readonly property color purple: "#bb9af7"
@@ -21,15 +23,19 @@ QtObject {
     readonly property string fontFamily: "Terminess Nerd Font"
     readonly property int fontSize: 14
     readonly property int barHeight: 40
+    readonly property int barMargin: 4
+    readonly property int barRadius: 10
+    readonly property int pillInset: 4
+    readonly property real shellOutlineWidth: 1
     readonly property int radius: 10
-    readonly property int borderWidth: 2
+    readonly property int borderWidth: 1
     readonly property int popupWidth: 400
     readonly property int popupMaxHeight: 560
     readonly property int popupGap: 8
     readonly property real sdfSmoothing: 34
-    // The shader surface starts at a pill's bottom (y = 36), while the full bar
-    // ends at y = 40. This overlap makes its virtual bar plane meet that edge.
-    readonly property real sdfBarOverlap: 4
+    // The shader starts at the anchor pill's bottom and reaches back to the
+    // bar's outer edge. Keep this in sync with the pill's vertical inset.
+    readonly property real sdfBarOverlap: pillInset
     readonly property int sdfPadding: 44
     readonly property int popupLeaveDelay: 500
     readonly property int popupSettleDuration: 900

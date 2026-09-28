@@ -13,6 +13,10 @@ in
 {
   xdg.dataFile."wallpapers/desktop.png".source =
     ../assets/wallpapers/148557481_p1.jpg;
+  # Fcitx also looks in the user's XDG data directory. Keep the theme visible
+  # when the running daemon did not inherit the fcitx5-with-addons wrapper path.
+  xdg.dataFile."fcitx5/themes/marko-shell".source =
+    ../assets/config/fcitx5/marko-shell;
 
   # Config
   xdg.configFile."niri/config.kdl".source = ../assets/config/niri/config.kdl;

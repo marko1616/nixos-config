@@ -1,6 +1,5 @@
 import QtQuick
 import Quickshell
-import Quickshell.Wayland
 import Quickshell.Networking
 import Quickshell.Bluetooth
 import Quickshell.Services.UPower
@@ -12,16 +11,13 @@ PanelWindow {
     required property var modelData
 
     anchors { top: true; left: true; right: true }
+    // The bar floats free of the screen edges. The popup surface below uses the
+    // same margin so its SDF plane still meets the bar's bottom edge.
+    margins { top: Theme.barMargin; left: Theme.barMargin; right: Theme.barMargin }
     implicitHeight: Theme.barHeight
-    color: Theme.moduleBg
-    exclusiveZone: Theme.barHeight
+    color: "transparent"
+    exclusiveZone: Theme.barHeight + Theme.barMargin
     screen: modelData
-
-    // Niri only grants a popup's keyboard grab if its parent layer surface can
-    // receive the keyboard. Release that permission again after the popup closes.
-    WlrLayershell.keyboardFocus: Popover.current && Popover.current.anchorItem
-        && Popover.current.anchorItem.QsWindow.window === bar
-        ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
 
     readonly property bool pointerOnBar: barPointer.hovered
         || cpuPill.hovered || memPill.hovered || clockPill.hovered
@@ -29,6 +25,16 @@ PanelWindow {
         || batteryPill.hovered || powerPill.hovered
 
     SystemClock { id: clock; precision: SystemClock.Minutes }
+
+    // The interactive popup paints the same outlined SDF over the bottom edge.
+    // Its full-bar half-plane covers this border where the two surfaces join.
+    Rectangle {
+        anchors.fill: parent
+        radius: Theme.barRadius
+        color: Theme.moduleBg
+        border.width: Theme.shellOutlineWidth
+        border.color: Theme.shellOutline
+    }
 
     property string networkLabel: {
         var ds = Networking.devices.values
@@ -186,7 +192,7 @@ PanelWindow {
             // Workspaces
             Rectangle {
                 id: wsPill
-                height: Theme.barHeight - 8
+                height: Theme.barHeight - Theme.pillInset * 2
                 implicitWidth: Math.max(wsRow.implicitWidth + 16, 32)
                 radius: Theme.radius
                 color: Theme.moduleBg
@@ -243,7 +249,7 @@ PanelWindow {
 
             Rectangle {
                 id: trayPill
-                height: Theme.barHeight - 8
+                height: Theme.barHeight - Theme.pillInset * 2
                 radius: Theme.radius
                 color: Theme.moduleBg
                 border.width: 0
@@ -337,10 +343,10 @@ PanelWindow {
         }
     }
 
-    NetworkPanel { id: networkPopup; anchorItem: networkPill; barHovered: bar.pointerOnBar }
-    BluetoothPanel { id: bluetoothPopup; anchorItem: bluetoothPill; barHovered: bar.pointerOnBar }
-    AudioPanel { id: audioPopup; anchorItem: audioPill; barHovered: bar.pointerOnBar }
-    PowerPanel { id: powerPopup; anchorItem: powerPill; barHovered: bar.pointerOnBar }
+    NetworkPanel { id: networkPopup; anchorItem: networkPill; anchorWindow: bar; barHovered: bar.pointerOnBar }
+    BluetoothPanel { id: bluetoothPopup; anchorItem: bluetoothPill; anchorWindow: bar; barHovered: bar.pointerOnBar }
+    AudioPanel { id: audioPopup; anchorItem: audioPill; anchorWindow: bar; barHovered: bar.pointerOnBar }
+    PowerPanel { id: powerPopup; anchorItem: powerPill; anchorWindow: bar; barHovered: bar.pointerOnBar }
     HoverTooltip {
         anchorItem: cpuPill
         requestedVisible: cpuPill.hovered

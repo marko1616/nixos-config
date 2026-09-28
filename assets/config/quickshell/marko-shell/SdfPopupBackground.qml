@@ -15,6 +15,8 @@ ShaderEffect {
     property real gap: Theme.popupGap
     property real progress: revealProgress
     property color fillColor: Theme.moduleBg
+    property color outlineColor: Theme.shellOutline
+    property real outlineWidth: Theme.shellOutlineWidth
 
     blending: true
     fragmentShader: Qt.resolvedUrl("SdfPopup.frag.qsb")

@@ -5,7 +5,7 @@ width=400
 height=150
 
 padding=12
-border-size=2
+border-size=1
 border-radius=10
 
 background-color=#24283b

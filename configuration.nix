@@ -5,6 +5,10 @@
 { config, pkgs, inputs, ... }:
 let
   sddm-theme = pkgs.callPackage ./desktop/sddm-theme.nix { inherit inputs; };
+  fcitx5-marko-shell-theme = pkgs.runCommandNoCC "fcitx5-marko-shell-theme" { } ''
+    mkdir -p "$out/share/fcitx5/themes/marko-shell"
+    cp -r ${./assets/config/fcitx5/marko-shell}/. "$out/share/fcitx5/themes/marko-shell/"
+  '';
 in
 {
   imports =
@@ -102,7 +106,15 @@ in
      qt6Packages.fcitx5-chinese-addons
      fcitx5-gtk
      qt6Packages.fcitx5-qt
+     fcitx5-marko-shell-theme
    ];
+   # System defaults: ~/.config/fcitx5/conf/classicui.conf still takes precedence.
+   fcitx5.settings.addons.classicui.globalSection = {
+     Theme = "marko-shell";
+     DarkTheme = "marko-shell";
+     UseDarkTheme = "False";
+     Font = "Sans 13";
+   };
   };
 
   # Some programs need SUID wrappers, can be configured further or are

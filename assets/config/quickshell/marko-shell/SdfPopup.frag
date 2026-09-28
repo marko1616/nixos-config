@@ -15,6 +15,8 @@ layout(std140, binding = 0) uniform buf {
     float gap;
     float progress;
     vec4 fillColor;
+    vec4 outlineColor;
+    float outlineWidth;
 };
 
 float sdRoundedBox(vec2 point, vec2 center, vec2 halfSize, float radius) {
@@ -51,6 +53,12 @@ void main() {
 
     float antialias = max(fwidth(distanceToShape), 0.75);
     float coverage = 1.0 - smoothstep(-antialias, antialias, distanceToShape);
-    float alpha = fillColor.a * coverage;
-    fragColor = vec4(fillColor.rgb * coverage, alpha) * qt_Opacity;
+    float inner = 1.0 - smoothstep(-outlineWidth - antialias,
+                                   -outlineWidth + antialias, distanceToShape);
+    float stroke = max(0.0, coverage - inner);
+    // Premultiplied output: the border follows the union's outside contour,
+    // including the concave shoulders, rather than crossing its neck.
+    fragColor = vec4(fillColor.rgb * fillColor.a * inner
+                   + outlineColor.rgb * outlineColor.a * stroke,
+                     fillColor.a * inner + outlineColor.a * stroke) * qt_Opacity;
 }
