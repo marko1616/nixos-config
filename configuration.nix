@@ -95,6 +95,16 @@ in
     promptInit = "";
   };
 
+  i18n.inputMethod = {
+   type = "fcitx5";
+   enable = true;
+   fcitx5.addons = with pkgs; [
+     qt6Packages.fcitx5-chinese-addons
+     fcitx5-gtk
+     qt6Packages.fcitx5-qt
+   ];
+  };
+
   # Some programs need SUID wrappers, can be configured further or are
   # started in user sessions.
   # programs.mtr.enable = true;

@@ -23,5 +23,8 @@
     '')
     networkmanagerapplet # Provides nm-connection-editor for Advanced settings.
     moonlight-qt
+    wireshark
+    google-chrome
+    libreoffice
   ];
 }

@@ -35,6 +35,7 @@ in
           allowedIPs = peer.allowedIPs;
           endpoint = peer.endpoint;
           persistentKeepalive = peer.persistentKeepalive or null;
+          dynamicEndpointRefreshSeconds = peer.dynamicEndpointRefreshSeconds or null;
         })
         settings.peers;
     };
