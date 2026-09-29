@@ -15,7 +15,7 @@ PopupWindow {
     readonly property real bodyHeight: label.implicitHeight + 16
 
     implicitWidth: bodyWidth + Theme.sdfPadding * 2
-    implicitHeight: bodyHeight + Theme.popupGap
+    implicitHeight: bodyHeight * Theme.motionMaxProgress + Theme.popupGap + Theme.sdfEdgePadding
     color: "transparent"
     grabFocus: false
 
@@ -48,7 +48,9 @@ PopupWindow {
         onTriggered: {
             if (!root.shouldShow) return
             root.visible = true
-            Qt.callLater(function() { root.revealProgress = 1 })
+            Qt.callLater(function() {
+                if (root.visible && root.shouldShow) root.revealProgress = 1
+            })
         }
     }
 
@@ -59,11 +61,14 @@ PopupWindow {
     }
 
     Behavior on revealProgress {
-        SpringAnimation {
-            spring: 5.0
-            damping: 0.35
-            mass: 1.0
-            epsilon: 0.01
+        id: revealBehavior
+        enabled: false
+        NumberAnimation {
+            id: revealAnimation
+            duration: revealBehavior.targetValue > 0 ? Theme.motionDuration : Theme.motionCloseDuration
+            easing.type: Easing.BezierSpline
+            easing.bezierCurve: revealBehavior.targetValue > 0 && Theme.motionOvershoot
+                ? Theme.motionCurve : Theme.motionCloseCurve
             onRunningChanged: {
                 if (!running && root.visible && !root.shouldShow
                         && root.revealProgress <= 0.01) {
@@ -74,8 +79,18 @@ PopupWindow {
         }
     }
 
+    onVisibleChanged: {
+        revealBehavior.enabled = visible
+        if (!visible) {
+            revealProgress = 0
+            revealAnimation.complete()
+        }
+    }
+
     SdfPopupBackground {
+        id: background
         anchors.fill: parent
+        bodyHeight: root.bodyHeight
         revealProgress: root.revealProgress
     }
 
@@ -83,14 +98,15 @@ PopupWindow {
         anchors.top: parent.top
         anchors.topMargin: Theme.popupGap
         anchors.horizontalCenter: parent.horizontalCenter
-        width: root.bodyWidth
-        height: root.bodyHeight * Math.max(0, Math.min(1, root.revealProgress))
+        width: background.animatedBodyWidth
+        height: Math.max(0, background.bodyBottom - Theme.popupGap)
         clip: true
 
         Item {
+            x: (parent.width - width) / 2
             width: root.bodyWidth
             height: root.bodyHeight
-            y: (1 - root.revealProgress) * -6
+            y: (1 - background.progress) * -12
 
             Text {
                 id: label

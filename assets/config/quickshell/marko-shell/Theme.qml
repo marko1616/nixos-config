@@ -37,9 +37,20 @@ QtObject {
     // bar's outer edge. Keep this in sync with the pill's vertical inset.
     readonly property real sdfBarOverlap: pillInset
     readonly property int sdfPadding: 44
+    // Bottom AA and smooth-union reach for even a short, empty tooltip.
+    readonly property int sdfEdgePadding: 4
     readonly property int popupLeaveDelay: 500
-    readonly property int popupSettleDuration: 900
-    readonly property int motionDuration: 180
+    // Same 200 ms attack / single rebound as the niri window-open curve.
+    // Set false for a non-overshooting fallback; interactions stay unchanged.
+    readonly property bool motionOvershoot: true
+    readonly property int motionDuration: 200
+    readonly property int motionCloseDuration: 160
+    // Qt BezierSpline needs two control points AND the endpoint (1, 1).
+    readonly property list<real> motionCurve: [0.23, 1.23, 0.61, 1.08, 1, 1]
+    readonly property list<real> motionCloseCurve: [1 / 3, 1, 2 / 3, 1, 1, 1]
+    // The opening curve peaks at 1.05191. Reserve space, including AA, for it.
+    readonly property real motionMaxProgress: motionOvershoot ? 1.06 : 1.0
+    readonly property int popupSettleDuration: motionDuration + motionCloseDuration + 100
 
     readonly property color controlOff: "#16161e"
     readonly property color controlThumb: "#ffffff"

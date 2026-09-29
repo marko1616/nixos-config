@@ -351,7 +351,7 @@ animations {
     // including after the touchpad gesture.
     workspace-switch {
         // off
-        spring damping-ratio=1.0 stiffness=1000 epsilon=0.0001
+        spring damping-ratio=0.85 stiffness=1000 epsilon=0.0001
     }
 
     // All horizontal camera view movement:
@@ -361,24 +361,87 @@ animations {
     // - And so on.
     horizontal-view-movement {
         // off
-        spring damping-ratio=1.0 stiffness=800 epsilon=0.0001
+        spring damping-ratio=0.8 stiffness=800 epsilon=0.0001
     }
 
-    // Window opening animation. Note that this one has different defaults.
+    // Reference: flickowoa/zephyr@d2e9782, theme.conf lines 18-19.
+    // Its commented example is a 200 ms overshoot + popin, not a spring.
+    // This ports that example, not an assertion about the author's live config.
+    // Requires niri >= 25.08 for cubic-bezier. Keep gesture springs above.
     window-open {
-        // off
-        // duration-ms 150
-        // curve "ease-out-expo"
+        duration-ms 200
+        curve "cubic-bezier" 0.23 1.23 0.61 1.08
 
-        // Example for a slightly bouncy window opening:
-        spring damping-ratio=0.8 stiffness=1000 epsilon=0.0001
+        // Prefix custom-shader with /- to restore niri's stock rendering.
+        // Unlike stock 50% -> 100% scaling, grow from the window centre.
+        custom-shader r"
+            vec4 open_color(vec3 coords_geo, vec3 size_geo) {
+                if (niri_progress <= 0.0)
+                    return vec4(0.0);
+
+                // Do not clamp geometry to 1: that would erase the overshoot.
+                float scale = max(0.001, niri_progress);
+                vec3 source_geo = vec3(
+                    (coords_geo.xy - vec2(0.5)) / scale + vec2(0.5), 1.0);
+                vec2 uv = (niri_geo_to_tex * source_geo).xy;
+
+                // Check texture bounds, not geometry bounds: retain CSD shadows.
+                if (any(lessThan(uv, vec2(0.0)))
+                        || any(greaterThan(uv, vec2(1.0))))
+                    return vec4(0.0);
+
+                // Finish the fade early so the scale/rebound remains visible.
+                float alpha = smoothstep(0.0, 0.25,
+                    clamp(niri_clamped_progress, 0.0, 1.0));
+                return texture2D(niri_tex, uv) * alpha;
+            }
+        "
+    }
+
+    window-close {
+        // A monotone exit is intentional: reversing the overshooting curve
+        // through zero can invert the image or make it reappear at the end.
+        // This exit is a niri adaptation, not a copied Zephyr fade setting.
+        duration-ms 200
+        curve "ease-out-cubic"
+
+        // Prefix custom-shader with /- to restore niri's stock rendering.
+        custom-shader r"
+            vec4 close_color(vec3 coords_geo, vec3 size_geo) {
+                float progress = clamp(niri_clamped_progress, 0.0, 1.0);
+                if (progress >= 1.0)
+                    return vec4(0.0);
+
+                float scale = max(0.001, 1.0 - progress);
+                vec3 source_geo = vec3(
+                    (coords_geo.xy - vec2(0.5)) / scale + vec2(0.5), 1.0);
+                vec2 uv = (niri_geo_to_tex * source_geo).xy;
+                if (any(lessThan(uv, vec2(0.0)))
+                        || any(greaterThan(uv, vec2(1.0))))
+                    return vec4(0.0);
+
+                return texture2D(niri_tex, uv) * (1.0 - progress);
+            }
+        "
+    }
+
+    // Individual tile movement and resizing were still using stock springs.
+    // Keep these paired; niri synchronizes accompanying camera motion on resize.
+    window-movement {
+        duration-ms 200
+        curve "cubic-bezier" 0.23 1.23 0.61 1.08
+    }
+
+    window-resize {
+        duration-ms 200
+        curve "cubic-bezier" 0.23 1.23 0.61 1.08
     }
 
     // Config parse error and new default config creation notification
     // open/close animation.
     config-notification-open-close {
         // off
-        spring damping-ratio=0.6 stiffness=1000 epsilon=0.001
+        spring damping-ratio=0.55 stiffness=1000 epsilon=0.001
     }
 }
 

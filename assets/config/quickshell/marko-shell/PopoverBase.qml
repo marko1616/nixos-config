@@ -39,11 +39,16 @@ PanelWindow {
     }
 
     Behavior on revealProgress {
-        SpringAnimation {
-            spring: 5.0
-            damping: 0.35
-            mass: 1.0
-            epsilon: 0.01
+        id: revealBehavior
+        // Set synchronously on visibility changes before resetting the target.
+        enabled: false
+        NumberAnimation {
+            id: revealAnimation
+            // targetValue is updated before Behavior starts the animation.
+            duration: revealBehavior.targetValue > 0 ? Theme.motionDuration : Theme.motionCloseDuration
+            easing.type: Easing.BezierSpline
+            easing.bezierCurve: revealBehavior.targetValue > 0 && Theme.motionOvershoot
+                ? Theme.motionCurve : Theme.motionCloseCurve
             onRunningChanged: {
                 if (!running && root.closing && root.visible
                         && root.revealProgress <= 0.01) {
@@ -95,11 +100,13 @@ PanelWindow {
 
     onWidthChanged: { if (visible) updatePosition() }
     onVisibleChanged: {
+        revealBehavior.enabled = visible
         if (!visible) {
             closeTimer.stop()
             opening = false
             closing = false
             expanded = false
+            revealAnimation.complete()
             leaveArmed = false
             if (Popover.current === root) Popover.current = null
         }
@@ -107,7 +114,7 @@ PanelWindow {
 
     Timer {
         id: closeTimer
-        // The spring normally unmaps on completion; this is a bounded fallback.
+        // Normally unmap on animation completion; this is a longer failsafe.
         interval: Theme.popupSettleDuration
         onTriggered: root.visible = false
     }
@@ -134,18 +141,20 @@ PanelWindow {
         x: root.cardX - Theme.sdfPadding
         y: Theme.barMargin + Theme.barHeight - Theme.sdfBarOverlap
         width: Theme.popupWidth + Theme.sdfPadding * 2
-        height: root.popHeight + Theme.popupGap
+        height: root.popHeight * Theme.motionMaxProgress + Theme.popupGap + Theme.sdfEdgePadding
 
         SdfPopupBackground {
+            id: background
             anchors.fill: parent
+            bodyHeight: root.popHeight
             revealProgress: root.revealProgress
         }
 
         Item {
             id: hitSurface
-            x: Theme.sdfPadding
-            width: Theme.popupWidth
-            height: root.popHeight + Theme.popupGap
+            x: (parent.width - width) / 2
+            width: background.animatedBodyWidth
+            height: Math.max(0, background.bodyBottom)
 
             HoverHandler {
                 id: popupPointer
@@ -163,14 +172,15 @@ PanelWindow {
                 id: contentReveal
                 y: Theme.popupGap
                 width: parent.width
-                height: root.popHeight * Math.max(0, Math.min(1, root.revealProgress))
+                height: Math.max(0, parent.height - y)
                 clip: true
 
                 FocusScope {
                     id: contents
-                    width: parent.width
+                    x: (parent.width - width) / 2
+                    width: Theme.popupWidth
                     height: root.popHeight
-                    y: (1 - root.revealProgress) * -8
+                    y: (1 - background.progress) * -24
                     focus: true
                     enabled: !root.closing
                     Keys.onEscapePressed: function(event) {

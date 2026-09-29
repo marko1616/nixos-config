@@ -36,7 +36,12 @@ T.Switch {
             color: Theme.controlThumb
             Behavior on x {
                 enabled: !control.down
-                NumberAnimation { duration: Theme.motionDuration; easing.type: Easing.OutCubic }
+                NumberAnimation {
+                    duration: Theme.motionDuration
+                    easing.type: Easing.BezierSpline
+                    easing.bezierCurve: Theme.motionOvershoot
+                        ? Theme.motionCurve : Theme.motionCloseCurve
+                }
             }
         }
     }

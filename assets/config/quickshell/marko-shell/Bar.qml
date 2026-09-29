@@ -217,6 +217,19 @@ PanelWindow {
                                  : (modelData.active ? Theme.fg : Theme.border)
                             font.family: Theme.fontFamily
                             font.pixelSize: Theme.fontSize
+                            scale: modelData.focused ? 1.25 : 1.0
+                            transformOrigin: Item.Center
+                            Behavior on scale {
+                                NumberAnimation {
+                                    duration: Theme.motionDuration
+                                    easing.type: Easing.BezierSpline
+                                    easing.bezierCurve: Theme.motionOvershoot
+                                        ? Theme.motionCurve : Theme.motionCloseCurve
+                                }
+                            }
+                            Behavior on color {
+                                ColorAnimation { duration: Theme.motionDuration }
+                            }
                             MouseArea {
                                 anchors.fill: parent
                                 onClicked: NiriService.focusWorkspace(modelData.id)
