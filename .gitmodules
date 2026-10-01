@@ -49,3 +49,6 @@
 [submodule "assets/plugins/nvim/nvim-treesitter"]
 	path = assets/plugins/nvim/nvim-treesitter
 	url = https://github.com/nvim-treesitter/nvim-treesitter.git
+[submodule "assets/rime-ice"]
+	path = assets/rime-ice
+	url = https://github.com/iDvel/rime-ice.git

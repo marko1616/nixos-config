@@ -1,0 +1,15 @@
+schema:
+  schema_id: marko-input-stroke
+  name: marko-input-stroke
+  version: "1.0"
+engine:
+  processors: [speller, selector, express_editor]
+  segmentors: [abc_segmentor]
+  translators: [table_translator]
+speller:
+  alphabet: hspnz
+translator:
+  dictionary: stroke
+  prism: marko-input-stroke
+  enable_user_dict: false
+  enable_sentence: false

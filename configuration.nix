@@ -14,12 +14,16 @@ in
   imports =
     [
       ./desktop/niri.nix
+      ./desktop/rime.nix
       ./desktop/sddm-avatars.nix
       ./services/ssh.nix
       ./services/wireguard.nix
     ];
 
   # Experimental features
+  # Rollback switch: keeps the original Fcitx5 Pinyin addon and theme available.
+  programs.markoInput.enable = true;
+
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
 
   # Home manager

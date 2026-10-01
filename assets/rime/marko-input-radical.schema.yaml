@@ -1,0 +1,12 @@
+# Separate prism: do not change another installed scheme's radical encoding.
+schema:
+  schema_id: marko-input-radical
+  name: marko-input-radical
+  version: "1.0.0"
+__include: radical_pinyin.schema.yaml:/
+__patch:
+  schema/schema_id: marko-input-radical
+  schema/name: marko-input-radical
+  translator/prism: marko-input-radical
+  speller/algebra:
+    __include: radical_pinyin.schema.yaml:/algebra_double_pinyin_flypy

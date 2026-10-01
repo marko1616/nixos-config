@@ -11,6 +11,7 @@ Niri, SDDM / Pixie, QuickShell (marko-shell bar), Wofi, Kitty and Mako with Toky
 The bar is the QuickShell configuration in `assets/config/quickshell/marko-shell/`, installed to `~/.config/quickshell/marko-shell`.
 
 Fcitx5's Classic UI candidate panel uses the `assets/config/fcitx5/marko-shell/` theme by system default. Home Manager also links it into `~/.local/share/fcitx5/themes/marko-shell/`, so the theme remains discoverable even if Fcitx was not launched through the bundled wrapper. Its Tokyo Night colors and rounded SVG backgrounds match the bar. An existing `~/.config/fcitx5/conf/classicui.conf` takes precedence over the system default: in Fcitx5 Configuration → Addons → Classic User Interface, select **Marko Shell** for Theme (and Dark Theme if following the system color scheme). If the theme is absent after activation, log out and back in before checking again. Classic UI themes do not animate the candidate panel; the QuickShell popup animation does not apply to Fcitx5.
+The Rime input method ships as scheme `marko-input`: Flypy double pinyin by default, `Shift+U` for stroke and component lookup plus the symbol categories `udw`, `uxh`, `uts`, `ubd`, `usx`, `ujh` and `uzm`, and `Shift+V` for Chinese numbers, dates, times and formulas, along with Unicode code points (`UC`) and GB18030 codes (`GB`). Set `programs.markoInput.enable = false;` to turn it off. Upstream sources are pinned by revision and the schemas are compiled during the build; activation does not touch user Rime data. After switching, log out and back in, then choose Rime's Deploy action to refresh the per-user cache. See [Rime U/V modes](docs/rime-uv.md).
 
 The workspace indicator marks urgency with an orange dot. Wi-Fi rows read BSSIDs from NetworkManager's cached scan results, so disconnected networks show the strongest visible access point as well as the number of additional matches. The active association is only shown when the scan identifies exactly one active BSSID for that device and SSID. Password entry uses the shell's own NetworkManager activation helper, so clicking Connect does not open a second system password dialog. Legacy Waybar, bzmenu and networkmanager_dmenu are no longer installed by this configuration.
 
@@ -23,6 +24,8 @@ Zsh / Oh My Zsh, Neovim, LLVM / Clang, Python, btop, QQ and optional public-key 
 Neovim plugins are pinned submodules deployed read-only; Tree-sitter parsers and queries are installed to the writable Neovim data `site` directory. Use `:TSInstall` for required languages and explicitly run `:TSUpdate` after updating the Tree-sitter plugin. Startup does not install or update parsers.
 
 ## Structure
+
+For a navigable file/deployment map and the active shortcuts, start at the [documentation index](docs/README.md).
 
 ```text
 flake.nix                   # System entry point
