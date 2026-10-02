@@ -79,14 +79,18 @@
     "private-config": {
       "flake": false,
       "locked": {
-        "path": "./templates/private-config",
-        "type": "path"
+        "lastModified": 1790928633,
+        "narHash": "sha256-6U7/GY6ZkYQevMm4QIVM3kyqmcvAgg59vg5cJ2bpQzE=",
+        "ref": "refs/heads/main",
+        "rev": "89c35f58503edd785c20c759a15538a08b37ee48",
+        "revCount": 2,
+        "type": "git",
+        "url": "ssh://git@github.com/marko1616/nixos-private-config.git"
       },
       "original": {
-        "path": "./templates/private-config",
-        "type": "path"
-      },
-      "parent": []
+        "type": "git",
+        "url": "ssh://git@github.com/marko1616/nixos-private-config.git"
+      }
     },
     "root": {
       "inputs": {

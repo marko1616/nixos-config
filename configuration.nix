@@ -5,7 +5,7 @@
 { config, pkgs, inputs, ... }:
 let
   sddm-theme = pkgs.callPackage ./desktop/sddm-theme.nix { inherit inputs; };
-  fcitx5-marko-shell-theme = pkgs.runCommandNoCC "fcitx5-marko-shell-theme" { } ''
+  fcitx5-marko-shell-theme = pkgs.runCommand "fcitx5-marko-shell-theme" { } ''
     mkdir -p "$out/share/fcitx5/themes/marko-shell"
     cp -r ${./assets/config/fcitx5/marko-shell}/. "$out/share/fcitx5/themes/marko-shell/"
   '';

@@ -13,7 +13,7 @@
     };
     private-config = {
       # Managed by cli.py private switch. No credentials in this URL.
-      url = "path:./templates/private-config";
+      url = "git+ssh://git@github.com/marko1616/nixos-private-config.git";
       flake = false;
     };
   };
