@@ -50,8 +50,6 @@ assets/                     # Dotfiles, images and plugin submodules
 ```bash
 git clone --depth 1 --recurse-submodules --shallow-submodules https://github.com/marko1616/nixos-config.git
 cd nixos-config
-flake_ref="git+file://$PWD?submodules=1"
-nix flake lock "$flake_ref"
 ./cli.py private init
 ./cli.py private import-hardware
 ./cli.py private edit-host
@@ -72,6 +70,12 @@ Use `update-qq` before applying updates when a newer upstream release is needed;
 
 Switching refuses uncommitted local changes, checks out the candidate at the exact private revision resolved by the new lock (detached HEAD), validates it, retains the old directory as a backup, and restores the input/lock on failure. Create a development branch before making new commits in that checkout. Private-repository commands never commit, push or activate the system; the interactive `switch-dev` and `switch-prod` actions do activate it. Remote input URLs and revisions remain visible in the public lock file. Do not put private keys or passwords in Flake sources.
 
+## Lock file menu
+
+Open `./cli.py` → `flake-lock` (a menu entry, not a subcommand): initialize / complete a lock while keeping valid pins, update one declared input, update all inputs, or review / stage the current lock. Use initialize / complete for first-time setup. Updates use the inputs declared in `flake.nix`, without the dev override; updating `private-config` does not change its local checkout.
+
+Nix writes a temporary candidate first. Review the before/after and HEAD diffs, then discard it, save without staging, or save and stage **only the entire `flake.lock`** (replacing its previous staged version). Other staged files are untouched. Generation failure or cancellation before saving leaves the original lock and index unchanged; a staging failure retains the saved lock for retry. No sudo, commit, push, build or activation occurs. The existing strict prod lock checks remain in place.
+
 ## Build and activate
 
 Open the interactive menu with `./cli.py`, select one of these four actions, then confirm. These are menu entries, not subcommands such as `./cli.py build-dev`.
@@ -87,22 +91,6 @@ All four invoke `sudo nixos-rebuild`, target `default`, and use the current loca
 
 `dev` overrides the private input with the local directory and adds `--no-write-lock-file`; prod does not override inputs. New public configuration files must be in the Git index to be included in the Git flake. `private build-local` has been removed; use the interactive `build-dev` entry instead (it invokes sudo).
 
-Equivalent manual build workflow:
-
-Test local configuration without updating the lock:
-
-```bash
-sudo nixos-rebuild build --flake "$flake_ref#default" \
-  --override-input private-config "path:$PWD/private-config" --no-write-lock-file
-```
-
-After committing and pushing private changes, use the locked remote input:
-
-```bash
-nix flake update --flake "$flake_ref" private-config
-sudo nixos-rebuild build --flake "$flake_ref#default" --no-update-lock-file
-sudo nixos-rebuild test --flake "$flake_ref#default" --no-update-lock-file
-sudo nixos-rebuild switch --flake "$flake_ref#default" --no-update-lock-file
-```
+After committing and pushing private changes, choose `flake-lock` → update one input → `private-config`, review and stage the result, then choose `build-prod` or `switch-prod`.
 
 Check SSH and desktop behavior before rebooting to verify the kernel and SDDM. No copy into `/etc/nixos` is needed.

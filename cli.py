@@ -248,6 +248,7 @@ TASKS = [
         "name": "switch-prod",
         "desc": "Build and activate using the repository inputs pinned in flake.lock.",
     },
+    {"name": "flake-lock", "desc": "Initialize, update or review and stage flake.lock."},
     {"name": "private-init", "desc": "Initialize private-config/ from the public template."},
     {"name": "private-switch", "desc": "Switch the private-config repository and lock its input."},
     {"name": "private-status", "desc": "Check the private-config repository and input mapping."},
@@ -503,6 +504,9 @@ def main_menu():
             }:
                 action, environment = selected.split("-", 1)
                 run_nixos_rebuild(action, environment == "dev")
+            elif selected == "flake-lock":
+                from scripts.flake_lock import run_menu
+                run_menu(ROOT, console)
             elif selected.startswith("private-"):
                 from scripts.private_config import main as private_main
                 command = selected.removeprefix("private-")

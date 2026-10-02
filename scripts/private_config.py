@@ -138,9 +138,16 @@ def locked_private_revision(root):
 def require_prod_lock(root):
     """A lock on disk is insufficient if the Git flake omits it."""
     lock = root / 'flake.lock'
-    if lock.is_symlink() or not lock.is_file():
-        raise ValueError('prod requires a reviewed flake.lock; update inputs explicitly first.')
-    git(root, 'ls-files', '--error-unmatch', '--', 'flake.lock', capture=True)
+    if lock.is_symlink():
+        raise ValueError('prod refuses a symlink at flake.lock; use a regular lock file.')
+    if not lock.exists():
+        raise ValueError('flake.lock is missing; open flake-lock in the menu, initialize, review and stage it.')
+    if not lock.is_file():
+        raise ValueError('flake.lock is not a regular file.')
+    try:
+        git(root, 'ls-files', '--error-unmatch', '--', 'flake.lock', capture=True)
+    except subprocess.CalledProcessError as exc:
+        raise ValueError('flake.lock is not Git-indexed; open flake-lock and review / stage it.') from exc
     data = json.loads(lock.read_text())
     if not isinstance(data, dict) or not isinstance(data.get('nodes'), dict):
         raise ValueError('Invalid flake.lock; review and regenerate it explicitly.')

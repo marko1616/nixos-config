@@ -50,8 +50,6 @@ assets/                    # dotfiles、壁纸、头像与插件子模块
 ```bash
 git clone --depth 1 --recurse-submodules --shallow-submodules https://github.com/marko1616/nixos-config.git
 cd nixos-config
-flake_ref="git+file://$PWD?submodules=1"
-nix flake lock "$flake_ref"
 ./cli.py private init
 ./cli.py private import-hardware
 ./cli.py private edit-host
@@ -77,6 +75,12 @@ nix flake lock "$flake_ref"
 
 切换会拒绝未提交的本地修改，将候选仓库检出到新 lock 中的精确 revision（detached HEAD）并重新验证，保留旧目录备份，失败时恢复输入和锁文件。继续开发前先创建开发分支。私有仓库管理命令不会提交、推送或激活系统；交互菜单中的 `switch-dev` 和 `switch-prod` 会激活系统。输入来源写入 `flake.nix`，提交写入 `flake.lock`。公钥和硬件内容不会进入公共主仓库；私有仓库地址及 revision 会记录在锁文件中。Flake 配置不能存放私钥或密码。
 
+## 锁文件菜单
+
+运行 `./cli.py` → `flake-lock`（菜单项，不是子命令），选择初始化／补全（保留有效锁定）、更新指定输入、更新全部输入，或查看／暂存当前锁文件。首次使用选初始化／补全。操作使用 `flake.nix` 声明的输入，不带 dev 的本地覆盖；更新 `private-config` 锁定不会切换其本地 checkout。
+
+Nix 先生成临时候选文件，展示操作前后及相对 HEAD 的差异，再选择丢弃、仅保存，或保存并**仅暂存整个 `flake.lock`**（替换它原有的暂存版本）。其他文件的暂存状态不变。生成失败或保存前取消不会改变原锁文件和索引；暂存失败则保留已保存的文件，便于重试。不会调用 sudo、提交、推送、构建或激活系统；prod 的严格锁定检查保持不变。
+
 ## 构建与激活
 
 运行 `./cli.py` 打开交互菜单，选择以下四个选项之一，再确认执行（不是 `./cli.py build-dev` 形式的子命令）：
@@ -92,22 +96,6 @@ nix flake lock "$flake_ref"
 
 `dev` 添加本地私有目录覆盖和 `--no-write-lock-file`；prod 不覆盖输入。新建的公共配置文件必须先纳入 Git 索引，否则 Git flake 不会包含它们。已删除 `private build-local`，改用交互菜单中的 `build-dev`（会调用 sudo）。
 
-以下为对应的手动构建流程：
-
-未推送的本地配置：
-
-```bash
-sudo nixos-rebuild build --flake "$flake_ref#default" \
-  --override-input private-config "path:$PWD/private-config" --no-write-lock-file
-```
-
-使用已提交并推送的私有配置：
-
-```bash
-nix flake update --flake "$flake_ref" private-config
-sudo nixos-rebuild build --flake "$flake_ref#default" --no-update-lock-file
-sudo nixos-rebuild test --flake "$flake_ref#default" --no-update-lock-file
-sudo nixos-rebuild switch --flake "$flake_ref#default" --no-update-lock-file
-```
+私有配置提交并推送后，在 `flake-lock` 中选择更新指定输入 → `private-config`，审阅并暂存结果，再选择 `build-prod` 或 `switch-prod`。
 
 先检查 SSH 新连接和桌面，再重启验证内核与 SDDM。无需复制配置到 `/etc/nixos`。
