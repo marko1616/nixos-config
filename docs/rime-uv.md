@@ -22,6 +22,8 @@ Within U/V mode, `Space` or `Enter` commits the selected candidate, `Ctrl+Enter`
 - `desktop/rime.nix` — module and enable switch. Its input-method group is an initial default, not a replacement for an existing user profile. System activation does not delete or rewrite a user's Rime directory; redeploy from the Fcitx5 Rime menu to update compiled data.
 - `desktop/rime-data.nix` — assembles the pinned `assets/rime-ice` Git submodule, revision-pinned rime-stroke data, and `assets/rime/`. Schemas are compiled and required artifacts checked during the build.
 - `assets/rime/marko-input.schema.yaml` — patches the Flypy schema with the U/V processing chain.
+- `assets/rime/marko_terms.dict.yaml` — Chinese technical and title terms selected from `USER.md`, loaded as a dictionary pack so the main Rime Ice dictionary and existing learned words remain in place.
+- `assets/rime/marko_phrase_double.txt` — complete lowercase codes for project names and abbreviations (for example, `riscv` → `RISC-V`); no account or infrastructure identifiers.
 - `assets/rime/marko-input-radical.schema.yaml` and `marko-input-stroke.schema.yaml` — separate prisms that do not rewrite other installed schemas.
 - `assets/rime/lua/marko_uv_*.lua` — processor, segmentor, translator and filter entry points; `lua/marko_uv/` contains V-mode and symbol helpers.
 - `scripts/build_rime_uv_data.py` — generates `symbols.lua` and `gb_data.lua` from pinned upstream files during the build. Runtime use does not fetch network data.

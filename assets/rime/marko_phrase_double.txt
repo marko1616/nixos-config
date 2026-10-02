@@ -1,0 +1,52 @@
+# Rime table
+# coding: utf-8
+#@/db_name	marko_phrase_double.txt
+#@/db_type	tabledb
+# Terms with punctuation, spaces, or preferred capitalization from USER.md.
+# Codes are memorable lowercase spellings or abbreviations; entries require an exact code.
+# Keep account names, domains, hosts, endpoints, and locations out of this file.
+# No comments after this line.
+RISC-V	riscv
+Chisel	chisel
+VIPT	vipt
+PIPT	pipt
+ECC	ecc
+LSTM	lstm
+SSM	ssm
+LoRA	lora
+PiSSA	pissa
+LLaMA-Factory	llamafactory
+GLM-4V-9B	glmvision
+Gemma-2-9B	gemma
+Qwen2-VL	qwenvl
+Phi-3.5-vision	phivision
+Mamba	mamba
+YOLO-World	yoloworld
+CycleGAN	cyclegan
+GPT-SoVITS	gptsovits
+Fish Speech	fishspeech
+btrfs	btrfs
+KVM	kvm
+QEMU	qemu
+Pi-hole	pihole
+proxychains	proxychains
+NvChad	nvchad
+VisionFive 2	visionfive
+Motion Canvas	motioncanvas
+memtester	memtester
+GDB	gdb
+Metasploit	metasploit
+shellcode	shellcode
+nmap	nmap
+CTF	ctf
+YaneuraOu	yaneuraou
+mahjong-gpt	mahjonggpt
+DCS World	dcsworld
+X-Plane 11	xplane
+MSFS 2024	msfs
+War Thunder	warthunder
+Train Sim World	trainsimworld
+Kerbal Space Program	ksp
+Girls Band Cry	girlsbandcry
+Kevin Penkin	kevinpenkin
+KOAN Sound	koansound

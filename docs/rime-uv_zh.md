@@ -25,6 +25,8 @@
   rime-stroke 按 revision 取自上游；两者与 `assets/rime` 一并拼装，在构建期编译并断言
   关键产物存在。
 - `assets/rime/marko-input.schema.yaml` — 在小鹤方案上打补丁，接入 U/V 处理链。
+- `assets/rime/marko_terms.dict.yaml` — 从 `USER.md` 挑选的中文专业词语与作品名，以词典扩展包挂载，保留雾凇拼音主词典及原有用户学习数据。
+- `assets/rime/marko_phrase_double.txt` — 项目名和缩写的完整小写输入码（如 `riscv` → `RISC-V`）；不包含账号或基础设施标识。
 - `assets/rime/marko-input-radical.schema.yaml`、`marko-input-stroke.schema.yaml` — 独立 prism，
   不改写其它已安装方案的编码。
 - `assets/rime/lua/marko_uv_*.lua` — 入口处理与译文；`lua/marko_uv/` — V 模式与符号表。

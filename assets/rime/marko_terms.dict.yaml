@@ -1,0 +1,31 @@
+# Rime dictionary pack for terms selected from USER.md.
+# No account, host, endpoint, or location identifiers.
+---
+name: marko_terms
+version: "2026-10-01"
+sort: by_weight
+use_preset_vocabulary: false
+...
+模型微调	mo xing wei tiao	1000
+低秩适配	di zhi shi pei	1000
+梯度传播	ti du chuan bo	1000
+视觉语言模型	shi jue yu yan mo xing	1000
+多模态模型	duo mo tai mo xing	1000
+乱序访存	luan xu fang cun	1000
+动态分支预测	dong tai fen zhi yu ce	1000
+分支预测器	fen zhi yu ce qi	1000
+缓存一致性	huan cun yi zhi xing	1000
+预取器	yu qu qi	1000
+组相联	zu xiang lian	1000
+页表遍历	ye biao bian li	1000
+浮点单元	fu dian dan yuan	1000
+非法指令	fei fa zhi ling	1000
+明日方舟终末地	ming ri fang zhou zhong mo di	1000
+废墟图书馆	fei xu tu shu guan	1000
+边狱巴士	bian yu ba shi	1000
+迷宫饭	mi gong fan	1000
+民航模拟	min hang mo ni	1000
+涵道机	han dao ji	1000
+计组	ji zu	1000
+形态识别	xing tai shi bie	1000
+句法解码	ju fa jie ma	1000

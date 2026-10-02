@@ -36,6 +36,7 @@ runCommand "rime-marko-input-1.0.0" {
   # Compilation is a build gate, not an activation-time modification of user data.
   rime_deployer --build "$out/share/rime-data" "$out/share/rime-data" "$out/share/rime-data/build"
   test -s "$out/share/rime-data/build/marko-input.schema.yaml"
+  test -s "$out/share/rime-data/build/marko_terms.table.bin"
   test -s "$out/share/rime-data/build/marko-input-radical.prism.bin"
   test -s "$out/share/rime-data/build/marko-input-stroke.prism.bin"
 ''

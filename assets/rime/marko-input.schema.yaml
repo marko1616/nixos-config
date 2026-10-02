@@ -39,6 +39,9 @@ __patch:
     - table_translator@cn_en
     - lua_translator@*force_gc
   engine/filters: [lua_filter@*marko_uv_filter]
+  # Keep rime_ice as the main dictionary (and retain its user learning database).
+  translator/packs: [marko_terms]
+  custom_phrase/user_dict: marko_phrase_double
   marko_normal_filters:
     __include: double_pinyin_flypy.schema.yaml:/engine/filters
   recognizer/patterns/unicode: "^$"
