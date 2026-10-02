@@ -76,6 +76,7 @@ PopoverBase {
                     var devs = Bluetooth.defaultAdapter.devices.values
                     return [...devs].sort(function(a, b) {
                         if (a.connected !== b.connected) return b.connected - a.connected
+                        if (a.bonded !== b.bonded) return b.bonded - a.bonded
                         if (a.paired !== b.paired) return b.paired - a.paired
                         return (a.name || a.deviceName) < (b.name || b.deviceName) ? -1 : 1
                     })
@@ -107,7 +108,11 @@ PopoverBase {
                         Text {
                             Layout.fillWidth: true
                             text: (modelData.pairing ? "Pairing…"
-                                  : (modelData.connected ? "Connected" : (modelData.paired ? "Paired" : "Not paired")))
+                                  : (modelData.connected
+                                      ? (modelData.bonded ? "Connected · Bonded" : "Connected · Not bonded")
+                                      : (modelData.bonded
+                                          ? "Bonded"
+                                          : (modelData.paired ? "Paired · Not bonded" : "Not paired"))))
                                   + (modelData.batteryAvailable ? " · " + Math.round(modelData.battery * 100) + "%" : "")
                                   + " · " + modelData.address
                             color: Theme.border
@@ -119,16 +124,16 @@ PopoverBase {
                     TextButton {
                         enabled: Bluetooth.defaultAdapter ? Bluetooth.defaultAdapter.enabled : false
                         text: modelData.pairing ? "Cancel"
-                            : (modelData.paired
-                                ? (modelData.connected ? "Disconnect" : "Connect")
-                                : "Pair")
+                            : (modelData.connected
+                                ? "Disconnect"
+                                : ((modelData.bonded || modelData.paired) ? "Connect" : "Pair"))
                         textColor: modelData.pairing ? Theme.yellow
                                  : (modelData.connected ? Theme.red : Theme.blue)
                         onClicked: {
                             if (modelData.pairing) modelData.cancelPair()
-                            else if (!modelData.paired) modelData.pair()
                             else if (modelData.connected) modelData.disconnect()
-                            else modelData.connect()
+                            else if (modelData.bonded || modelData.paired) modelData.connect()
+                            else modelData.pair()
                         }
                     }
                 }
