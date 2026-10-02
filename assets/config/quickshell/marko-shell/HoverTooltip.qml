@@ -7,6 +7,7 @@ PopupWindow {
     id: root
 
     property var anchorItem: null
+    required property var anchorWindow
     property string text: ""
     property bool requestedVisible: false
     readonly property bool shouldShow: requestedVisible && Popover.current === null
@@ -19,14 +20,27 @@ PopupWindow {
     color: "transparent"
     grabFocus: false
 
-    onAnchorItemChanged: {
-        if (anchorItem) {
-            anchor.item = anchorItem
-            anchor.edges = Edges.Bottom
-            anchor.gravity = Edges.Bottom
-            anchor.adjustment = PopupAdjustment.Slide | PopupAdjustment.Flip
-            anchor.margins.bottom = 0
-        }
+    anchor.window: anchorWindow
+    anchor.edges: Edges.Top | Edges.Left
+    anchor.gravity: Edges.Bottom | Edges.Right
+    anchor.adjustment: PopupAdjustment.Slide | PopupAdjustment.Flip
+    anchor.onAnchoring: {
+        if (!root.anchorItem || !root.anchorWindow) return
+        var point = root.anchorItem.mapToItem(root.anchorWindow.contentItem,
+            root.anchorItem.width / 2, root.anchorItem.height)
+        // Constrain the entire shader surface, not just its body. Its bar
+        // half-plane is opaque even in the horizontal shoulder padding.
+        // Stay past the bar's rounded corners so that plane meets a flat edge.
+        var inset = Theme.barRadius + Theme.sdfEdgePadding
+        var maxX = Math.max(inset, root.anchorWindow.width - root.width - inset)
+        anchor.rect.x = Math.round(Math.max(inset, Math.min(maxX,
+            point.x - root.width / 2)))
+        anchor.rect.y = Math.round(point.y)
+    }
+
+    Connections {
+        target: root.anchorWindow
+        function onWidthChanged() { root.anchor.updateAnchor() }
     }
 
     onShouldShowChanged: {

@@ -362,16 +362,19 @@ PanelWindow {
     PowerPanel { id: powerPopup; anchorItem: powerPill; anchorWindow: bar; barHovered: bar.pointerOnBar }
     HoverTooltip {
         anchorItem: cpuPill
+        anchorWindow: bar
         requestedVisible: cpuPill.hovered
         text: bar.cpuDetailsText()
     }
     HoverTooltip {
         anchorItem: memPill
+        anchorWindow: bar
         requestedVisible: memPill.hovered
         text: bar.memoryDetailsText()
     }
     HoverTooltip {
         anchorItem: batteryPill
+        anchorWindow: bar
         requestedVisible: batteryPill.visible && batteryPill.hovered
         text: bar.batteryEstimateText()
     }
