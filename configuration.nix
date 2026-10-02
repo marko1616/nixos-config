@@ -118,6 +118,11 @@ in
      DarkTheme = "marko-shell";
      UseDarkTheme = "False";
      Font = "Sans 13";
+     # Fcitx draws SNI text icons itself, without relying on an icon theme.
+     PreferTextIcon = "True";
+     TrayFont = "Terminess Nerd Font Bold 10";
+     TrayTextColor = "#bb9af7ff";
+     TrayOutlineColor = "#00000000";
    };
   };
 
