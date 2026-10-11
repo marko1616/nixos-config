@@ -13,7 +13,7 @@
   # Packages
   home.packages = with pkgs; [
     v2rayn
-    awww
+    mpvpaper
     xwayland-satellite
     wl-clipboard
     quickshell

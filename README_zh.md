@@ -8,6 +8,8 @@ Niri 桌面与 Home Manager 配置，使用 Flake 固定依赖。真实主机配
 
 Niri、SDDM / Pixie、QuickShell（marko-shell 顶栏）、Wofi、Kitty、Mako，采用 Tokyo Night 配色。
 
+mpvpaper 默认显示仓库自带的单张静态壁纸；私有配置模板为 `"enable": false`、`"path": ""`，不预设 MP4。要选择其他图片或 MP4，在 `private-config/wallpaper/settings.json` 中将 `enable` 设为 `true` 并设置 `path`。相对路径以 **private-config 根目录**为基准：`"path": "wallpaper/picture.jpg"` 对应 `private-config/wallpaper/picture.jpg`，`"path": "wallpaper/desktop.mp4"` 则选择该处的 MP4。也支持绝对路径，例如 `"path": "/home/<USER>/Videos/desktop.mp4"`；`~` 不会展开，相对路径不能包含 `..`。放在 private-config 且纳入 Git 的媒体会随 flake 输入进入 Nix store；仓库外的绝对路径只在运行时读取媒体，不会复制媒体文件。Niri 启动时若文件不存在，会退回自带静态图。通过 `./cli.py` 菜单的 `build-dev` / `switch-dev` 应用，之后重新登录。已有的 private-config 不会因 `private init` 自动获得新文件，需要从 `templates/private-config/wallpaper/settings.json` 手工补入；新增的私有配置和媒体文件在 `build-dev` 前都要加入私有仓库的 Git 索引，否则 Git-backed flake 不会收录。
+
 顶栏为 `assets/config/quickshell/marko-shell/` 中的 QuickShell 配置，安装到 `~/.config/quickshell/marko-shell`。
 
 Fcitx5 经典界面的候选窗默认使用 `assets/config/fcitx5/marko-shell/` 主题；Home Manager 还会将其链接到 `~/.local/share/fcitx5/themes/marko-shell/`，使未从整合包装器启动的 Fcitx 也能发现主题。主题以 Tokyo Night 配色和 SVG 圆角匹配顶栏。现有的 `~/.config/fcitx5/conf/classicui.conf` 优先于系统默认设置：在「Fcitx5 配置 → 附加组件 → 经典用户界面」中，为 Theme 选择「Marko Shell」（若跟随系统明暗配色，Dark Theme 也选它）。激活后若仍看不到主题，先注销并重新登录再检查。经典界面主题不能为候选窗添加动画，QuickShell 弹窗动画也不会作用于 Fcitx5。

@@ -271,8 +271,7 @@ layout {
 // Force the Wayland Qt backend; without QT_QPA_PLATFORM Qt may pick xcb and fail to start.
 spawn-sh-at-startup "QT_QPA_PLATFORM=wayland qs -c marko-shell"
 // Wallpaper
-spawn-at-startup "awww-daemon"
-spawn-sh-at-startup "awww img \"${XDG_DATA_HOME:-$HOME/.local/share}/wallpapers/desktop.png\""
+spawn-at-startup "marko-wallpaper"
 
 // To run a shell command (with variables, pipes, etc.), use spawn-sh-at-startup:
 // spawn-sh-at-startup "qs -c ~/source/qs/MyAwesomeShell"

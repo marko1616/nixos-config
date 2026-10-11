@@ -36,7 +36,9 @@ These mappings come from `marko1616-home/desktop-environment.nix`, `marko1616-ho
 | `assets/plugins/nvim/` | `~/.local/share/nvim/plugins/`; pinned plugin submodules |
 | `assets/config/zsh/greeting.*` | `~/.config/zsh/` |
 | `assets/config/btop/btop.conf` | `~/.config/btop/btop.conf` |
-| `assets/wallpapers/148557481_p1.jpg` | `~/.local/share/wallpapers/desktop.png` |
+| `assets/wallpapers/148557481_p1.jpg` | `~/.local/share/wallpapers/desktop.jpg` |
+
+`templates/private-config/wallpaper/settings.json` provides the default wallpaper selector. Relative image or MP4 paths are rooted at `private-config/` and included in the flake input when tracked; absolute paths outside the repository remain runtime media paths. Niri starts the `marko-wallpaper` launcher supplied by Home Manager.
 
 `desktop/rime-data.nix` builds a Rime data package from `assets/rime/`, the `assets/rime-ice` submodule and pinned upstream sources. `desktop/rime.nix` adds that package to Fcitx5 when `programs.markoInput.enable` is true. The data is not installed by copying `assets/rime/` into the user's home. See [Rime U/V modes](rime-uv.md) for activation and redeployment.
 

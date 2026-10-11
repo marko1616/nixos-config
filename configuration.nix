@@ -29,6 +29,7 @@ in
   # Home manager
   home-manager.useGlobalPkgs = true;
   home-manager.useUserPackages = true;
+  home-manager.extraSpecialArgs = { inherit inputs; };
 
   home-manager.sharedModules = [ ./marko1616-home/home.nix ];
 

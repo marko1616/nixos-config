@@ -36,7 +36,9 @@
 | `assets/plugins/nvim/` | `~/.local/share/nvim/plugins/`；固定版本的插件 submodule |
 | `assets/config/zsh/greeting.*` | `~/.config/zsh/` |
 | `assets/config/btop/btop.conf` | `~/.config/btop/btop.conf` |
-| `assets/wallpapers/148557481_p1.jpg` | `~/.local/share/wallpapers/desktop.png` |
+| `assets/wallpapers/148557481_p1.jpg` | `~/.local/share/wallpapers/desktop.jpg` |
+
+`templates/private-config/wallpaper/settings.json` 提供壁纸选择器模板。图片或 MP4 的相对路径以 `private-config/` 为基准，纳入 Git 后会随 flake 输入进入 Nix store；仓库外的绝对路径只在运行时读取。Niri 启动 Home Manager 提供的 `marko-wallpaper` 入口。
 
 `desktop/rime-data.nix` 从 `assets/rime/`、`assets/rime-ice` submodule 和固定版本的上游文件构建 Rime 数据包。`programs.markoInput.enable` 为 true 时，`desktop/rime.nix` 将其加入 Fcitx5；不是把 `assets/rime/` 直接复制进用户家目录。激活与重新部署见 [Rime U/V 模式](rime-uv_zh.md)。
 
