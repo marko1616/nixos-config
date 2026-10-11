@@ -206,7 +206,7 @@ PopoverBase {
             Layout.fillWidth: true
             Text {
                 text: "Wi-Fi"
-                color: Theme.fg
+                color: Theme.networkTitle
                 font.family: Theme.fontFamily
                 font.pixelSize: Theme.fontSize
                 font.bold: true
@@ -225,7 +225,7 @@ PopoverBase {
             Layout.fillWidth: true
             visible: root.errorText !== ""
             text: root.errorText
-            color: Theme.red
+            color: Theme.networkError
             font.family: Theme.fontFamily
             font.pixelSize: Theme.fontSize - 2
             wrapMode: Text.Wrap
@@ -238,7 +238,7 @@ PopoverBase {
             text: Networking.connectivity === NetworkConnectivity.Portal
                   ? "Captive portal: sign-in required"
                   : "Limited connectivity"
-            color: Theme.yellow
+            color: Theme.networkWarning
             font.family: Theme.fontFamily
             font.pixelSize: Theme.fontSize - 2
             wrapMode: Text.Wrap
@@ -292,7 +292,7 @@ PopoverBase {
                 width: ListView.view.width
                 height: col.implicitHeight + 16
                 radius: Theme.radius - 2
-                color: modelData.connected ? Theme.surfaceActive : "transparent"
+                color: modelData.connected ? Theme.networkConnectedRowBackground : Theme.networkDisconnectedRowBackground
 
                 Connections {
                     target: networkRow.modelData
@@ -313,7 +313,7 @@ PopoverBase {
                         spacing: 8
                         Text {
                             text: Theme.wifiIcon
-                            color: Theme.cyan
+                            color: Theme.networkIcon
                             font.family: Theme.fontFamily
                             font.pixelSize: Theme.fontSize
                         }
@@ -323,7 +323,7 @@ PopoverBase {
                             Text {
                                 Layout.fillWidth: true
                                 text: modelData.name
-                                color: Theme.fg
+                                color: Theme.networkName
                                 font.family: Theme.fontFamily
                                 font.pixelSize: Theme.fontSize
                                 font.bold: true
@@ -335,7 +335,7 @@ PopoverBase {
                                       : (modelData.known ? "Saved · " : ""))
                                       + WifiSecurityType.toString(modelData.security)
                                       + " · Signal " + Math.round(modelData.signalStrength * 100) + "%"
-                                color: Theme.border
+                                color: Theme.networkDetails
                                 font.family: Theme.fontFamily
                                 font.pixelSize: Theme.fontSize - 2
                                 elide: Text.ElideRight
@@ -343,7 +343,7 @@ PopoverBase {
                             Text {
                                 Layout.fillWidth: true
                                 text: WifiData.apLabel(modelData, root.accessPointsByDevice)
-                                color: Theme.border
+                                color: Theme.networkAccessPointDetails
                                 font.family: Theme.fontFamily
                                 font.pixelSize: Theme.fontSize - 3
                                 elide: Text.ElideRight

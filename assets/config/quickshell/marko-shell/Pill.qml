@@ -5,7 +5,7 @@ Rectangle {
     id: pill
     property string icon: ""
     property string label: ""
-    property color accent: Theme.fg
+    property color accent: Theme.pillDefaultAccent
     readonly property bool hovered: pointer.containsMouse
 
     signal leftClicked()
@@ -16,7 +16,7 @@ Rectangle {
     height: Theme.barHeight - Theme.pillInset * 2
     implicitWidth: Math.max(contentRow.implicitWidth + 24, 32)
     radius: Theme.radius
-    color: Theme.moduleBg
+    color: Theme.pillBackground
     border.width: 0
 
     Row {

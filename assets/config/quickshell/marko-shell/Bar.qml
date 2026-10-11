@@ -15,7 +15,7 @@ PanelWindow {
     // same margin so its SDF plane still meets the bar's bottom edge.
     margins { top: Theme.barMargin; left: Theme.barMargin; right: Theme.barMargin }
     implicitHeight: Theme.barHeight
-    color: "transparent"
+    color: Theme.barWindowBackground
     exclusiveZone: Theme.barHeight + Theme.barMargin
     screen: modelData
 
@@ -31,9 +31,9 @@ PanelWindow {
     Rectangle {
         anchors.fill: parent
         radius: Theme.barRadius
-        color: Theme.moduleBg
+        color: Theme.barBackground
         border.width: Theme.shellOutlineWidth
-        border.color: Theme.shellOutline
+        border.color: Theme.barOutline
     }
 
     property string networkLabel: {
@@ -94,9 +94,9 @@ PanelWindow {
         return Theme.batteryIcons[0]
     }
     function batteryColor(pct) {
-        if (pct <= 20) return Theme.red
-        if (pct <= 30) return Theme.yellow
-        return Theme.green
+        if (pct <= 20) return Theme.batteryCritical
+        if (pct <= 30) return Theme.batteryLow
+        return Theme.batteryNormal
     }
     function formatDuration(seconds) {
         if (!isFinite(seconds) || seconds <= 0) return "Estimating…"
@@ -195,7 +195,7 @@ PanelWindow {
                 height: Theme.barHeight - Theme.pillInset * 2
                 implicitWidth: Math.max(wsRow.implicitWidth + 16, 32)
                 radius: Theme.radius
-                color: Theme.moduleBg
+                color: Theme.workspaceContainerBackground
                 border.width: 0
 
                 Row {
@@ -213,8 +213,8 @@ PanelWindow {
                             required property var modelData
                             enabled: NiriService.available
                             text: modelData.focused || modelData.active ? Theme.workspaceActiveIcon : Theme.workspaceDefaultIcon
-                            color: modelData.focused ? Theme.blue
-                                 : (modelData.active ? Theme.fg : Theme.border)
+                            color: modelData.focused ? Theme.workspaceFocused
+                                 : (modelData.active ? Theme.workspaceActive : Theme.workspaceInactive)
                             font.family: Theme.fontFamily
                             font.pixelSize: Theme.fontSize
                             scale: modelData.focused ? 1.25 : 1.0
@@ -241,7 +241,7 @@ PanelWindow {
                                 anchors.right: parent.right
                                 anchors.top: parent.top
                                 visible: modelData.urgent === true
-                                color: Theme.orange
+                                color: Theme.workspaceUrgent
                             }
                         }
                     }
@@ -251,20 +251,20 @@ PanelWindow {
             Text {
                 visible: !NiriService.available
                 text: "Niri offline"
-                color: Theme.border
+                color: Theme.workspaceSeparator
                 font.family: Theme.fontFamily
                 font.pixelSize: Theme.fontSize
                 anchors.verticalCenter: parent.verticalCenter
             }
 
-            Pill { id: cpuPill; icon: Theme.cpuIcon; label: SystemStats.cpuReady ? Math.round(SystemStats.cpuUsage) + "%" : "--"; accent: Theme.blue }
-            Pill { id: memPill; icon: Theme.memoryIcon; label: SystemStats.memReady ? Math.round(SystemStats.memUsage) + "%" : "--"; accent: Theme.purple }
+            Pill { id: cpuPill; icon: Theme.cpuIcon; label: SystemStats.cpuReady ? Math.round(SystemStats.cpuUsage) + "%" : "--"; accent: Theme.cpuAccent }
+            Pill { id: memPill; icon: Theme.memoryIcon; label: SystemStats.memReady ? Math.round(SystemStats.memUsage) + "%" : "--"; accent: Theme.memoryAccent }
 
             Rectangle {
                 id: trayPill
                 height: Theme.barHeight - Theme.pillInset * 2
                 radius: Theme.radius
-                color: Theme.moduleBg
+                color: Theme.statusContainerBackground
                 border.width: 0
                 implicitWidth: Math.max(trayRow.implicitWidth + 16, 32)
                 visible: SystemTray.items.values.length > 0
@@ -305,7 +305,7 @@ PanelWindow {
             anchors.centerIn: parent
             icon: Theme.clockIcon
             label: Qt.formatDateTime(clock.date, "hh:mm MM/dd/yy")
-            accent: Theme.orange
+            accent: Theme.clockAccent
         }
 
         // ---- RIGHT ----
@@ -319,21 +319,21 @@ PanelWindow {
                 id: networkPill
                 icon: Theme.wifiIcon
                 label: bar.networkLabel
-                accent: Theme.cyan
+                accent: Theme.wifiAccent
                 onLeftClicked: Popover.toggle(networkPopup)
             }
             Pill {
                 id: bluetoothPill
                 icon: Theme.bluetoothIcon
                 label: bar.bluetoothLabel
-                accent: Theme.blue
+                accent: Theme.bluetoothAccent
                 onLeftClicked: Popover.toggle(bluetoothPopup)
             }
             Pill {
                 id: audioPill
                 icon: bar.audioIcon()
                 label: AudioService.available ? AudioService.volume + "%" : "--"
-                accent: Theme.yellow
+                accent: Theme.audioAccent
                 onLeftClicked: Popover.toggle(audioPopup)
                 onRightClicked: AudioService.toggleMute()
                 onScrolledUp: AudioService.stepUp()
@@ -350,7 +350,7 @@ PanelWindow {
                 id: powerPill
                 icon: bar.powerIcon()
                 label: bar.powerLabel()
-                accent: Theme.purple
+                accent: Theme.powerAccent
                 onLeftClicked: Popover.toggle(powerPopup)
             }
         }

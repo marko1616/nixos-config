@@ -17,7 +17,7 @@ PopoverBase {
             Layout.fillWidth: true
             Text {
                 text: "Bluetooth"
-                color: Theme.fg
+                color: Theme.bluetoothTitle
                 font.family: Theme.fontFamily
                 font.pixelSize: Theme.fontSize
                 font.bold: true
@@ -39,7 +39,7 @@ PopoverBase {
             text: Bluetooth.defaultAdapter
                 ? Bluetooth.defaultAdapter.name + (Bluetooth.defaultAdapter.enabled ? " · Powered" : " · Powered off")
                 : "No Bluetooth adapter"
-            color: Theme.border
+            color: Theme.bluetoothAdapterStatus
             font.family: Theme.fontFamily
             font.pixelSize: Theme.fontSize - 2
             elide: Text.ElideRight
@@ -49,7 +49,7 @@ PopoverBase {
             Layout.fillWidth: true
             Text {
                 text: "Scanning"
-                color: Theme.fg
+                color: Theme.bluetoothScanningLabel
                 font.family: Theme.fontFamily
                 font.pixelSize: Theme.fontSize
             }
@@ -87,7 +87,7 @@ PopoverBase {
                 width: ListView.view.width
                 height: 48
                 radius: Theme.radius - 2
-                color: modelData.connected ? Theme.surfaceActive : "transparent"
+                color: modelData.connected ? Theme.bluetoothConnectedRowBackground : Theme.bluetoothDisconnectedRowBackground
 
                 RowLayout {
                     anchors.fill: parent
@@ -99,7 +99,7 @@ PopoverBase {
                         Text {
                             Layout.fillWidth: true
                             text: modelData.name || modelData.deviceName || modelData.address
-                            color: Theme.fg
+                            color: Theme.bluetoothDeviceName
                             font.family: Theme.fontFamily
                             font.pixelSize: Theme.fontSize
                             font.bold: true
@@ -115,7 +115,7 @@ PopoverBase {
                                           : (modelData.paired ? "Paired · Not bonded" : "Not paired"))))
                                   + (modelData.batteryAvailable ? " · " + Math.round(modelData.battery * 100) + "%" : "")
                                   + " · " + modelData.address
-                            color: Theme.border
+                            color: Theme.bluetoothDeviceDetails
                             font.family: Theme.fontFamily
                             font.pixelSize: Theme.fontSize - 2
                             elide: Text.ElideRight
@@ -127,8 +127,8 @@ PopoverBase {
                             : (modelData.connected
                                 ? "Disconnect"
                                 : ((modelData.bonded || modelData.paired) ? "Connect" : "Pair"))
-                        textColor: modelData.pairing ? Theme.yellow
-                                 : (modelData.connected ? Theme.red : Theme.blue)
+                        textColor: modelData.pairing ? Theme.bluetoothPairingAction
+                                 : (modelData.connected ? Theme.bluetoothDisconnectAction : Theme.bluetoothConnectAction)
                         onClicked: {
                             if (modelData.pairing) modelData.cancelPair()
                             else if (modelData.connected) modelData.disconnect()

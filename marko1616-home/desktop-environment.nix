@@ -1,4 +1,4 @@
-{ pkgs, lib, inputs, ... }:
+{ pkgs, lib, inputs, markoTheme, ... }:
 
 let
   wallpaperSettingsFile = "${inputs.private-config}/wallpaper/settings.json";
@@ -38,14 +38,6 @@ let
     fi
     exec ${pkgs.mpvpaper}/bin/mpvpaper -o 'no-audio loop-file=inf image-display-duration=inf keepaspect=yes video-unscaled=no video-aspect-override=no video-zoom=0 video-scale-x=1 video-scale-y=1 panscan=1 video-align-x=0 video-align-y=0 video-pan-x=0 video-pan-y=0' ALL "$wallpaper"
   '';
-  markoShell = pkgs.runCommandLocal "marko-shell" {
-    nativeBuildInputs = [ pkgs.qt6.qtshadertools ];
-  } ''
-    mkdir -p "$out"
-    cp -r ${../assets/config/quickshell/marko-shell}/. "$out/"
-    qsb --glsl "300es,330" \
-      -o "$out/SdfPopup.frag.qsb" "$out/SdfPopup.frag"
-  '';
 in
 {
   assertions = [
@@ -60,16 +52,16 @@ in
   # Fcitx also looks in the user's XDG data directory. Keep the theme visible
   # when the running daemon did not inherit the fcitx5-with-addons wrapper path.
   xdg.dataFile."fcitx5/themes/marko-shell".source =
-    ../assets/config/fcitx5/marko-shell;
+    "${markoTheme.fcitx5Theme}/share/fcitx5/themes/marko-shell";
 
   # Config
-  xdg.configFile."niri/config.kdl".source = ../assets/config/niri/config.kdl;
-  xdg.configFile."kitty/kitty.conf".source = ../assets/config/kitty/kitty.conf;
+  xdg.configFile."niri/config.kdl".source = markoTheme.files.niri;
+  xdg.configFile."kitty/kitty.conf".source = markoTheme.files.kitty;
   xdg.configFile."wofi/config".source = ../assets/config/wofi/config;
-  xdg.configFile."wofi/style.css".source = ../assets/config/wofi/style.css;
-  xdg.configFile."mako/config".source = ../assets/config/mako/config;
+  xdg.configFile."wofi/style.css".source = markoTheme.files.wofiStyle;
+  xdg.configFile."mako/config".source = markoTheme.files.mako;
   xdg.configFile."quickshell/marko-shell" = {
-    source = markoShell;
+    source = markoTheme.quickshell;
     recursive = true;
   };
 }

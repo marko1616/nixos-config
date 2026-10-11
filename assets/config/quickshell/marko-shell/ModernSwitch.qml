@@ -23,9 +23,9 @@ T.Switch {
         width: control.width
         height: control.height
         radius: height / 2
-        color: control.checked ? Theme.blue : Theme.controlOff
+        color: control.checked ? Theme.switchCheckedBackground : Theme.switchUncheckedBackground
         border.width: control.visualFocus ? 2 : 1
-        border.color: control.visualFocus ? Theme.fg : (control.checked ? Theme.blue : Theme.border)
+        border.color: control.visualFocus ? Theme.switchFocusBorder : (control.checked ? Theme.switchCheckedBorder : Theme.switchUncheckedBorder)
         Behavior on color { ColorAnimation { duration: Theme.motionDuration } }
         Rectangle {
             width: 18
@@ -33,7 +33,7 @@ T.Switch {
             radius: 9
             y: (parent.height - height) / 2
             x: 3 + control.visualPosition * (parent.width - width - 6)
-            color: Theme.controlThumb
+            color: Theme.switchThumb
             Behavior on x {
                 enabled: !control.down
                 NumberAnimation {

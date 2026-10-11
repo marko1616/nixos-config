@@ -4,11 +4,11 @@
 
 { config, pkgs, inputs, ... }:
 let
-  sddm-theme = pkgs.callPackage ./desktop/sddm-theme.nix { inherit inputs; };
-  fcitx5-marko-shell-theme = pkgs.runCommand "fcitx5-marko-shell-theme" { } ''
-    mkdir -p "$out/share/fcitx5/themes/marko-shell"
-    cp -r ${./assets/config/fcitx5/marko-shell}/. "$out/share/fcitx5/themes/marko-shell/"
-  '';
+  markoTheme = import ./theme { inherit pkgs; };
+  sddm-theme = pkgs.callPackage ./desktop/sddm-theme.nix {
+    inherit inputs;
+    colors = markoTheme.colors;
+  };
 in
 {
   imports =
@@ -29,7 +29,7 @@ in
   # Home manager
   home-manager.useGlobalPkgs = true;
   home-manager.useUserPackages = true;
-  home-manager.extraSpecialArgs = { inherit inputs; };
+  home-manager.extraSpecialArgs = { inherit inputs markoTheme; };
 
   home-manager.sharedModules = [ ./marko1616-home/home.nix ];
 
@@ -111,7 +111,7 @@ in
      qt6Packages.fcitx5-chinese-addons
      fcitx5-gtk
      qt6Packages.fcitx5-qt
-     fcitx5-marko-shell-theme
+     markoTheme.fcitx5Theme
    ];
    # System defaults: ~/.config/fcitx5/conf/classicui.conf still takes precedence.
    fcitx5.settings.addons.classicui.globalSection = {
@@ -122,8 +122,8 @@ in
      # Fcitx draws SNI text icons itself, without relying on an icon theme.
      PreferTextIcon = "True";
      TrayFont = "Terminess Nerd Font Bold 10";
-     TrayTextColor = "#bb9af7ff";
-     TrayOutlineColor = "#00000000";
+     TrayTextColor = markoTheme.colors.fcitx5.trayText;
+     TrayOutlineColor = markoTheme.colors.fcitx5.trayOutline;
    };
   };
 

@@ -21,7 +21,7 @@ PanelWindow {
 
     visible: false
     screen: anchorWindow ? anchorWindow.screen : null
-    color: "transparent"
+    color: Theme.popoverWindowBackground
     // A zero exclusive zone still respects the bar's reserved space and shifts
     // this full-screen overlay down by one bar height. Ignore it instead.
     exclusionMode: ExclusionMode.Ignore

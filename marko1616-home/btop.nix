@@ -1,4 +1,5 @@
-{ ... }:
+{ markoTheme, ... }:
 {
   xdg.configFile."btop/btop.conf".source = ../assets/config/btop/btop.conf;
+  xdg.configFile."btop/themes/marko.theme".source = markoTheme.files.btopTheme;
 }

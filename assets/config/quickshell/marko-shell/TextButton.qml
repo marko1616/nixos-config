@@ -4,7 +4,7 @@ import QtQuick.Templates as T
 // Native button focus/accessibility with the existing borderless skin.
 T.Button {
     id: control
-    property color textColor: Theme.blue
+    property color textColor: Theme.textButtonDefaultText
     implicitWidth: contentItem.implicitWidth + leftPadding + rightPadding
     implicitHeight: 32
     leftPadding: 8
@@ -14,11 +14,11 @@ T.Button {
     opacity: enabled ? 1 : 0.45
     background: Rectangle {
         radius: height / 2
-        color: control.down ? Qt.rgba(0.48, 0.64, 0.97, 0.20)
-             : control.hovered || control.visualFocus ? Qt.rgba(0.48, 0.64, 0.97, 0.10)
-             : "transparent"
+        color: control.down ? Theme.textButtonPressedBackground
+             : control.hovered || control.visualFocus ? Theme.textButtonHoverBackground
+             : Theme.textButtonIdleBackground
         border.width: control.visualFocus ? 1 : 0
-        border.color: Theme.blue
+        border.color: Theme.textButtonFocusBorder
         Behavior on color { ColorAnimation { duration: 100 } }
     }
     contentItem: Text {

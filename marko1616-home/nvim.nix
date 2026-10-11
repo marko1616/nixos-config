@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ pkgs, markoTheme, ... }:
 {
   home.packages = with pkgs; [
     tree-sitter
@@ -6,7 +6,7 @@
 
   # Configs
   xdg.configFile."nvim".source =
-    ../assets/config/nvim;
+    markoTheme.neovim;
 
   xdg.dataFile."nvim/plugins".source =
     ../assets/plugins/nvim;

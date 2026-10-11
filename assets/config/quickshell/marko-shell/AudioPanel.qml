@@ -15,7 +15,7 @@ PopoverBase {
             Layout.fillWidth: true
             Text {
                 text: "Volume"
-                color: Theme.fg
+                color: Theme.audioTitle
                 font.family: Theme.fontFamily
                 font.pixelSize: Theme.fontSize
                 font.bold: true
@@ -23,7 +23,7 @@ PopoverBase {
             Item { Layout.fillWidth: true }
             Text {
                 text: AudioService.available ? AudioService.volume + "%" : "No output"
-                color: Theme.yellow
+                color: Theme.audioValue
                 font.family: Theme.fontFamily
                 font.pixelSize: Theme.fontSize
                 font.bold: true
@@ -42,7 +42,7 @@ PopoverBase {
             Layout.fillWidth: true
             visible: AudioService.errorText !== ""
             text: AudioService.errorText
-            color: Theme.red
+            color: Theme.audioError
             font.family: Theme.fontFamily
             font.pixelSize: Theme.fontSize - 2
             wrapMode: Text.Wrap
@@ -53,7 +53,7 @@ PopoverBase {
             TextButton {
                 enabled: AudioService.available
                 text: AudioService.muted ? "Unmute" : "Mute"
-                textColor: AudioService.muted ? Theme.blue : Theme.red
+                textColor: AudioService.muted ? Theme.audioUnmuteAction : Theme.audioMuteAction
                 onClicked: AudioService.toggleMute()
             }
             Item { Layout.fillWidth: true }

@@ -2,7 +2,7 @@
 
 English | [中文](shortcuts_zh.md)
 
-These are **active bindings in the checked-in configuration**, not a list of all Niri, Neovim or Fcitx defaults. Niri's source of truth is [`assets/config/niri/config.kdl`](../assets/config/niri/config.kdl) under `binds`. `Mod` means Super in a normal Niri TTY session (Alt in its winit backend); `Ctrl` and `Shift` are separate modifiers. `Mod+Shift+/` opens Niri's on-screen hotkey overlay. Lines commented out in the KDL are not active.
+These are **active bindings in the checked-in configuration**, not a list of all Niri, Neovim or Fcitx defaults. Niri's source of truth is [`assets/config/niri/config.kdl.in`](../assets/config/niri/config.kdl.in) under `binds`. `Mod` means Super in a normal Niri TTY session (Alt in its winit backend); `Ctrl` and `Shift` are separate modifiers. `Mod+Shift+/` opens Niri's on-screen hotkey overlay. Lines commented out in the KDL are not active.
 
 ## Niri: launch and session
 

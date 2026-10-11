@@ -4,14 +4,14 @@ Version=1
 Description=Tokyo Night candidate panel matching marko-shell
 
 [InputPanel]
-NormalColor=#a9b1d6
-HighlightColor=#7aa2f7
-HighlightBackgroundColor=#2f354f
-HighlightCandidateColor=#a9b1d6
-CandidateLabelColor=#7aa2f7
-HighlightCandidateLabelColor=#7aa2f7
-CandidateCommentColor=#565f89
-HighlightCandidateCommentColor=#a9b1d6
+NormalColor=@normalText@
+HighlightColor=@highlightText@
+HighlightBackgroundColor=@highlightBackground@
+HighlightCandidateColor=@highlightCandidateText@
+CandidateLabelColor=@candidateLabel@
+HighlightCandidateLabelColor=@highlightCandidateLabel@
+CandidateCommentColor=@candidateComment@
+HighlightCandidateCommentColor=@highlightCandidateComment@
 
 [InputPanel/Background]
 Image=panel.svg

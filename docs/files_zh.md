@@ -11,6 +11,8 @@
 | `flake.nix` | 声明固定的输入与 `nixosConfigurations.default` 入口，引入 `configuration.nix` 和私有输入中的 `host.nix`。 |
 | `flake.lock` | 固定输入版本；生产构建前应生成并审查。 |
 | `configuration.nix` | 共用 NixOS 配置，导入 `desktop/` 与 `services/`。 |
+| `theme/colors.nix` | 唯一的第一方颜色值来源；不同应用与语义角色保留独立字段。 |
+| `theme/default.nix` | 校验颜色、向 Nix 模块暴露颜色，并渲染生成模块与静态模板。 |
 | `desktop/` | Niri、SDDM、Rime 及桌面数据模块。 |
 | `marko1616-home/home.nix` | 共用 Home Manager 入口，导入桌面、shell、编辑器等用户模块。 |
 | `services/` | SSH、WireGuard 等可选系统服务，由私有配置决定。 |
@@ -26,16 +28,16 @@
 
 | 仓库来源 | 用户侧位置或用途 |
 | --- | --- |
-| `assets/config/niri/config.kdl` | `~/.config/niri/config.kdl`；Niri 布局、规则和快捷键 |
+| `assets/config/niri/config.kdl.in` | `~/.config/niri/config.kdl`；Niri 布局、规则和快捷键 |
 | `assets/config/quickshell/marko-shell/` | `~/.config/quickshell/marko-shell/`；shader 在 Home Manager 构建时编译 |
-| `assets/config/kitty/kitty.conf` | `~/.config/kitty/kitty.conf` |
-| `assets/config/wofi/{config,style.css}` | `~/.config/wofi/` |
-| `assets/config/mako/config` | `~/.config/mako/config` |
-| `assets/config/fcitx5/marko-shell/` | `~/.local/share/fcitx5/themes/marko-shell/`，另有系统 Fcitx 主题包 |
-| `assets/config/nvim/` | `~/.config/nvim/` |
+| `assets/config/kitty/kitty.conf.in` | `~/.config/kitty/kitty.conf` |
+| `assets/config/wofi/config`、`style.css.in` | 安装／渲染到 `~/.config/wofi/` |
+| `assets/config/mako/config.in` | `~/.config/mako/config` |
+| `assets/config/fcitx5/marko-shell/*.in` | `~/.local/share/fcitx5/themes/marko-shell/`，另有系统 Fcitx 主题包 |
+| `assets/config/nvim/` | `~/.config/nvim/`，另注入生成的 Lua 颜色模块 |
 | `assets/plugins/nvim/` | `~/.local/share/nvim/plugins/`；固定版本的插件 submodule |
 | `assets/config/zsh/greeting.*` | `~/.config/zsh/` |
-| `assets/config/btop/btop.conf` | `~/.config/btop/btop.conf` |
+| `assets/config/btop/btop.conf`、`themes/marko.theme.in` | 配置与渲染后的主题安装到 `~/.config/btop/` |
 | `assets/wallpapers/148557481_p1.jpg` | `~/.local/share/wallpapers/desktop.jpg` |
 
 `templates/private-config/wallpaper/settings.json` 提供壁纸选择器模板。图片或 MP4 的相对路径以 `private-config/` 为基准，纳入 Git 后会随 flake 输入进入 Nix store；仓库外的绝对路径只在运行时读取。Niri 启动 Home Manager 提供的 `marko-wallpaper` 入口。

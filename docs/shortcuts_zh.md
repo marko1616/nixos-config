@@ -2,7 +2,7 @@
 
 [English](shortcuts.md) | 中文
 
-这里列出的是**仓库配置中已生效的绑定**，不是 Niri、Neovim 或 Fcitx 的全部上游默认键。Niri 的准确信息以 [`assets/config/niri/config.kdl`](../assets/config/niri/config.kdl) 中的 `binds` 为准。普通 Niri TTY 会话里 `Mod` 为 Super（winit 后端为 Alt）；`Ctrl`、`Shift` 是独立修饰键。`Mod+Shift+/` 可以打开 Niri 的屏幕快捷键提示。KDL 中注释掉的绑定不生效。
+这里列出的是**仓库配置中已生效的绑定**，不是 Niri、Neovim 或 Fcitx 的全部上游默认键。Niri 的准确信息以 [`assets/config/niri/config.kdl.in`](../assets/config/niri/config.kdl.in) 中的 `binds` 为准。普通 Niri TTY 会话里 `Mod` 为 Super（winit 后端为 Alt）；`Ctrl`、`Shift` 是独立修饰键。`Mod+Shift+/` 可以打开 Niri 的屏幕快捷键提示。KDL 中注释掉的绑定不生效。
 
 ## Niri：启动与会话
 

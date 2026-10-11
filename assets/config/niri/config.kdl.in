@@ -167,13 +167,13 @@ layout {
         // - CSS-like notation: "rgb(255, 127, 0)", rgba(), hsl() and a few others.
 
         // Color of the ring on the active monitor.
-        active-color "#565f89"
+        active-color "@focusRingActive@"
 
         // Color of the ring on inactive monitors.
         //
         // The focus ring only draws around the active window, so the only place
         // where you can see its inactive-color is on other monitors.
-        inactive-color "#505050"
+        inactive-color "@focusRingInactive@"
 
         // You can also use gradients. They take precedence over solid colors.
         // Gradients are rendered the same as CSS linear-gradient(angle, from, to).
@@ -198,8 +198,8 @@ layout {
         // off
 
         width 4
-        active-color "#565f89"
-        inactive-color "#505050"
+        active-color "@windowBorderActive@"
+        inactive-color "@windowBorderInactive@"
 
         // Color of the border around windows that request your attention.
         // urgent-color "#9b0000"
@@ -246,7 +246,7 @@ layout {
         offset x=0 y=5
 
         // You can also change the shadow color and opacity.
-        color "#00000099"
+        color "@shadow@"
     }
 
     // Struts shrink the area occupied by windows, similarly to layer-shell panels.

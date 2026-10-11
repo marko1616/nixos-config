@@ -2,6 +2,6 @@ font_family "Terminess Nerd Font Mono"
 font_size 10
 window_margin_width 5
 tab_bar_style separator
-background #000000
+background @background@
 background_opacity 0.6
 background_blur 10

@@ -4,21 +4,86 @@ import QtQuick
 // Tokyo Night-derived palette. Lift the shell surface above the wallpaper
 // while keeping the bar and its SDF popovers on one exact base color.
 QtObject {
-    readonly property color fg: "#a9b1d6"
-    readonly property color moduleBg: "#30364f"
-    readonly property color popupBg: moduleBg
-    readonly property color surfaceActive: "#414966"
-    readonly property color border: "#565f89"
-    readonly property color shellOutline: "#7480a8"
-
-    readonly property color blue: "#7aa2f7"
-    readonly property color purple: "#bb9af7"
-    readonly property color cyan: "#73daca"
-    readonly property color yellow: "#e0af68"
-    readonly property color green: "#9ece6a"
-    readonly property color orange: "#ff9e64"
-    readonly property color red: "#f7768e"
-
+    readonly property color barWindowBackground: Colors.barWindowBackground
+    readonly property color barBackground: Colors.barBackground
+    readonly property color barOutline: Colors.barOutline
+    readonly property color workspaceContainerBackground: Colors.workspaceContainerBackground
+    readonly property color workspaceFocused: Colors.workspaceFocused
+    readonly property color workspaceActive: Colors.workspaceActive
+    readonly property color workspaceInactive: Colors.workspaceInactive
+    readonly property color workspaceUrgent: Colors.workspaceUrgent
+    readonly property color workspaceSeparator: Colors.workspaceSeparator
+    readonly property color statusContainerBackground: Colors.statusContainerBackground
+    readonly property color cpuAccent: Colors.cpuAccent
+    readonly property color memoryAccent: Colors.memoryAccent
+    readonly property color clockAccent: Colors.clockAccent
+    readonly property color wifiAccent: Colors.wifiAccent
+    readonly property color bluetoothAccent: Colors.bluetoothAccent
+    readonly property color audioAccent: Colors.audioAccent
+    readonly property color batteryCritical: Colors.batteryCritical
+    readonly property color batteryLow: Colors.batteryLow
+    readonly property color batteryNormal: Colors.batteryNormal
+    readonly property color powerAccent: Colors.powerAccent
+    readonly property color pillDefaultAccent: Colors.pillDefaultAccent
+    readonly property color pillBackground: Colors.pillBackground
+    readonly property color audioTitle: Colors.audioTitle
+    readonly property color audioValue: Colors.audioValue
+    readonly property color audioError: Colors.audioError
+    readonly property color audioUnmuteAction: Colors.audioUnmuteAction
+    readonly property color audioMuteAction: Colors.audioMuteAction
+    readonly property color bluetoothTitle: Colors.bluetoothTitle
+    readonly property color bluetoothAdapterStatus: Colors.bluetoothAdapterStatus
+    readonly property color bluetoothScanningLabel: Colors.bluetoothScanningLabel
+    readonly property color bluetoothConnectedRowBackground: Colors.bluetoothConnectedRowBackground
+    readonly property color bluetoothDisconnectedRowBackground: Colors.bluetoothDisconnectedRowBackground
+    readonly property color bluetoothDeviceName: Colors.bluetoothDeviceName
+    readonly property color bluetoothDeviceDetails: Colors.bluetoothDeviceDetails
+    readonly property color bluetoothPairingAction: Colors.bluetoothPairingAction
+    readonly property color bluetoothDisconnectAction: Colors.bluetoothDisconnectAction
+    readonly property color bluetoothConnectAction: Colors.bluetoothConnectAction
+    readonly property color tooltipWindowBackground: Colors.tooltipWindowBackground
+    readonly property color tooltipBackground: Colors.tooltipBackground
+    readonly property color tooltipOutline: Colors.tooltipOutline
+    readonly property color tooltipText: Colors.tooltipText
+    readonly property color sliderTrack: Colors.sliderTrack
+    readonly property color sliderFill: Colors.sliderFill
+    readonly property color sliderThumb: Colors.sliderThumb
+    readonly property color sliderFocusBorder: Colors.sliderFocusBorder
+    readonly property color switchCheckedBackground: Colors.switchCheckedBackground
+    readonly property color switchUncheckedBackground: Colors.switchUncheckedBackground
+    readonly property color switchFocusBorder: Colors.switchFocusBorder
+    readonly property color switchCheckedBorder: Colors.switchCheckedBorder
+    readonly property color switchUncheckedBorder: Colors.switchUncheckedBorder
+    readonly property color switchThumb: Colors.switchThumb
+    readonly property color networkTitle: Colors.networkTitle
+    readonly property color networkError: Colors.networkError
+    readonly property color networkWarning: Colors.networkWarning
+    readonly property color networkConnectedRowBackground: Colors.networkConnectedRowBackground
+    readonly property color networkDisconnectedRowBackground: Colors.networkDisconnectedRowBackground
+    readonly property color networkIcon: Colors.networkIcon
+    readonly property color networkName: Colors.networkName
+    readonly property color networkDetails: Colors.networkDetails
+    readonly property color networkAccessPointDetails: Colors.networkAccessPointDetails
+    readonly property color passwordText: Colors.passwordText
+    readonly property color passwordPlaceholder: Colors.passwordPlaceholder
+    readonly property color passwordSelectionBackground: Colors.passwordSelectionBackground
+    readonly property color passwordSelectedText: Colors.passwordSelectedText
+    readonly property color passwordFocusedBackground: Colors.passwordFocusedBackground
+    readonly property color passwordUnfocusedBackground: Colors.passwordUnfocusedBackground
+    readonly property color popoverWindowBackground: Colors.popoverWindowBackground
+    readonly property color popoverBackground: Colors.popoverBackground
+    readonly property color popoverOutline: Colors.popoverOutline
+    readonly property color powerTitle: Colors.powerTitle
+    readonly property color powerSelectedBackground: Colors.powerSelectedBackground
+    readonly property color powerHoverBackground: Colors.powerHoverBackground
+    readonly property color powerIdleBackground: Colors.powerIdleBackground
+    readonly property color powerIcon: Colors.powerIcon
+    readonly property color powerLabel: Colors.powerLabel
+    readonly property color textButtonDefaultText: Colors.textButtonDefaultText
+    readonly property color textButtonPressedBackground: Colors.textButtonPressedBackground
+    readonly property color textButtonHoverBackground: Colors.textButtonHoverBackground
+    readonly property color textButtonIdleBackground: Colors.textButtonIdleBackground
+    readonly property color textButtonFocusBorder: Colors.textButtonFocusBorder
 
     readonly property string fontFamily: "Terminess Nerd Font"
     readonly property int fontSize: 14
@@ -52,8 +117,6 @@ QtObject {
     readonly property real motionMaxProgress: motionOvershoot ? 1.06 : 1.0
     readonly property int popupSettleDuration: motionDuration + motionCloseDuration + 100
 
-    readonly property color controlOff: "#16161e"
-    readonly property color controlThumb: "#ffffff"
 
     readonly property string wifiIcon: ""
     readonly property string bluetoothIcon: ""

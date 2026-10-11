@@ -30,13 +30,13 @@ T.Slider {
         width: control.availableWidth - control.implicitHandleWidth
         height: 6
         radius: 3
-        color: Theme.controlOff
+        color: Theme.sliderTrack
         Rectangle {
             x: control.mirrored ? parent.width - width : 0
             width: control.position * parent.width
             height: parent.height
             radius: 3
-            color: Theme.yellow
+            color: Theme.sliderFill
         }
     }
     handle: Rectangle {
@@ -45,9 +45,9 @@ T.Slider {
         implicitWidth: 18
         implicitHeight: 18
         radius: 9
-        color: Theme.controlThumb
+        color: Theme.sliderThumb
         border.width: control.visualFocus ? 2 : 0
-        border.color: Theme.blue
+        border.color: Theme.sliderFocusBorder
     }
     MouseArea {
         anchors.fill: parent

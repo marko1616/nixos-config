@@ -11,6 +11,8 @@ This is a map of the repository's entry points and files, not an instruction to 
 | `flake.nix` | Declares pinned inputs and the `nixosConfigurations.default` entry. It imports `configuration.nix` and `host.nix` from the private input. |
 | `flake.lock` | Pins resolved input revisions; generate and review it before a production build. |
 | `configuration.nix` | Shared NixOS settings and imports for `desktop/` and `services/`. |
+| `theme/colors.nix` | The only first-party color-value source; keys stay independent across applications and roles. |
+| `theme/default.nix` | Validates colors, exposes them to Nix modules, and renders generated modules and static templates. |
 | `desktop/` | Niri, SDDM, Rime and desktop data modules. |
 | `marko1616-home/home.nix` | Shared Home Manager entry; imports the desktop, shell, editor and other user modules. |
 | `services/` | Optional system services, including SSH and WireGuard, driven by private settings. |
@@ -26,16 +28,16 @@ These mappings come from `marko1616-home/desktop-environment.nix`, `marko1616-ho
 
 | Repository source | Installed user location or use |
 | --- | --- |
-| `assets/config/niri/config.kdl` | `~/.config/niri/config.kdl`; Niri layout, rules and key bindings |
+| `assets/config/niri/config.kdl.in` | `~/.config/niri/config.kdl`; Niri layout, rules and key bindings |
 | `assets/config/quickshell/marko-shell/` | `~/.config/quickshell/marko-shell/`; shader compiled during the Home Manager build |
-| `assets/config/kitty/kitty.conf` | `~/.config/kitty/kitty.conf` |
-| `assets/config/wofi/{config,style.css}` | `~/.config/wofi/` |
-| `assets/config/mako/config` | `~/.config/mako/config` |
-| `assets/config/fcitx5/marko-shell/` | `~/.local/share/fcitx5/themes/marko-shell/`, plus the system Fcitx theme package |
-| `assets/config/nvim/` | `~/.config/nvim/` |
+| `assets/config/kitty/kitty.conf.in` | `~/.config/kitty/kitty.conf` |
+| `assets/config/wofi/config`, `style.css.in` | Installed/rendered under `~/.config/wofi/` |
+| `assets/config/mako/config.in` | `~/.config/mako/config` |
+| `assets/config/fcitx5/marko-shell/*.in` | `~/.local/share/fcitx5/themes/marko-shell/`, plus the system Fcitx theme package |
+| `assets/config/nvim/` | `~/.config/nvim/`, with a generated Lua color module |
 | `assets/plugins/nvim/` | `~/.local/share/nvim/plugins/`; pinned plugin submodules |
 | `assets/config/zsh/greeting.*` | `~/.config/zsh/` |
-| `assets/config/btop/btop.conf` | `~/.config/btop/btop.conf` |
+| `assets/config/btop/btop.conf`, `themes/marko.theme.in` | Config and rendered theme under `~/.config/btop/` |
 | `assets/wallpapers/148557481_p1.jpg` | `~/.local/share/wallpapers/desktop.jpg` |
 
 `templates/private-config/wallpaper/settings.json` provides the default wallpaper selector. Relative image or MP4 paths are rooted at `private-config/` and included in the flake input when tracked; absolute paths outside the repository remain runtime media paths. Niri starts the `marko-wallpaper` launcher supplied by Home Manager.

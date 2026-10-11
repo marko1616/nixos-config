@@ -17,7 +17,7 @@ PopupWindow {
 
     implicitWidth: bodyWidth + Theme.sdfPadding * 2
     implicitHeight: bodyHeight * Theme.motionMaxProgress + Theme.popupGap + Theme.sdfEdgePadding
-    color: "transparent"
+    color: Theme.tooltipWindowBackground
     grabFocus: false
 
     anchor.window: anchorWindow
@@ -106,6 +106,8 @@ PopupWindow {
         anchors.fill: parent
         bodyHeight: root.bodyHeight
         revealProgress: root.revealProgress
+        fillColor: Theme.tooltipBackground
+        outlineColor: Theme.tooltipOutline
     }
 
     Item {
@@ -126,7 +128,7 @@ PopupWindow {
                 id: label
                 anchors.centerIn: parent
                 text: root.text
-                color: Theme.fg
+                color: Theme.tooltipText
                 font.family: Theme.fontFamily
                 font.pixelSize: Theme.fontSize - 1
                 lineHeight: 1.15

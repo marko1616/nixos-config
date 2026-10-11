@@ -22,8 +22,8 @@ ShaderEffect {
     readonly property real animatedBodyWidth: bodyWidth * (0.60 + 0.40 * progress)
     readonly property real animatedBodyHeight: Math.max(1, bodyHeight * progress)
     readonly property real bodyBottom: bodyTop + animatedBodyHeight
-    property color fillColor: Theme.moduleBg
-    property color outlineColor: Theme.shellOutline
+    property color fillColor: Theme.popoverBackground
+    property color outlineColor: Theme.popoverOutline
     property real outlineWidth: Theme.shellOutlineWidth
 
     blending: true

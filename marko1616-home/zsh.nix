@@ -1,4 +1,4 @@
-{ config, ... }:
+{ config, markoTheme, ... }:
 {
   programs.zsh = {
     enable = true;
@@ -9,7 +9,7 @@
 
     autosuggestion = {
       enable = true;
-      highlight = "fg=#565f89";
+      highlight = "fg=${markoTheme.colors.zsh.autosuggestion}";
     };
 
     syntaxHighlighting.enable = true;

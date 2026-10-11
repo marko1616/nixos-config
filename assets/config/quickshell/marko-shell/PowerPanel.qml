@@ -16,7 +16,7 @@ PopoverBase {
 
         Text {
             text: "Power profile"
-            color: Theme.fg
+            color: Theme.powerTitle
             font.family: Theme.fontFamily
             font.pixelSize: Theme.fontSize
             font.bold: true
@@ -33,9 +33,9 @@ PopoverBase {
                 Layout.preferredHeight: 36
                 Layout.maximumHeight: 36
                 radius: Theme.radius - 2
-                color: PowerProfiles.profile === profileEnum(modelData) ? Theme.surfaceActive
-                     : profileMouse.containsMouse ? Qt.rgba(0.48, 0.64, 0.97, 0.10)
-                     : "transparent"
+                color: PowerProfiles.profile === profileEnum(modelData) ? Theme.powerSelectedBackground
+                     : profileMouse.containsMouse ? Theme.powerHoverBackground
+                     : Theme.powerIdleBackground
 
                 Behavior on color {
                     ColorAnimation { duration: 120 }
@@ -48,13 +48,13 @@ PopoverBase {
                     spacing: 8
                     Text {
                         text: profileIcon(modelData)
-                        color: Theme.purple
+                        color: Theme.powerIcon
                         font.family: Theme.fontFamily
                         font.pixelSize: Theme.fontSize
                     }
                     Text {
                         text: profileLabel(modelData)
-                        color: Theme.fg
+                        color: Theme.powerLabel
                         font.family: Theme.fontFamily
                         font.pixelSize: Theme.fontSize
                         font.bold: true

@@ -13,11 +13,11 @@ T.TextField {
     verticalAlignment: TextInput.AlignVCenter
     font.family: Theme.fontFamily
     font.pixelSize: Theme.fontSize
-    color: Theme.fg
+    color: Theme.passwordText
     placeholderText: "Password"
-    placeholderTextColor: Theme.border
-    selectionColor: Theme.blue
-    selectedTextColor: Theme.popupBg
+    placeholderTextColor: Theme.passwordPlaceholder
+    selectionColor: Theme.passwordSelectionBackground
+    selectedTextColor: Theme.passwordSelectedText
     echoMode: TextInput.Password
     selectByMouse: true
     activeFocusOnTab: true
@@ -42,7 +42,7 @@ T.TextField {
 
     background: Rectangle {
         radius: Theme.radius - 2
-        color: control.activeFocus ? Theme.surfaceActive : Theme.controlOff
+        color: control.activeFocus ? Theme.passwordFocusedBackground : Theme.passwordUnfocusedBackground
         border.width: 0
     }
 }

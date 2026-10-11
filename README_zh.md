@@ -8,11 +8,13 @@ Niri 桌面与 Home Manager 配置，使用 Flake 固定依赖。真实主机配
 
 Niri、SDDM / Pixie、QuickShell（marko-shell 顶栏）、Wofi、Kitty、Mako，采用 Tokyo Night 配色。
 
+所有第一方颜色值只写在 `theme/colors.nix` 这一个文件中。即使当前颜色相同，不同应用和语义角色也保留独立字段，修改一个目标不会连带改变另一个。`theme/default.nix` 将颜色暴露给 Nix，并生成 QuickShell、Neovim 的颜色模块；仅有配置文件的 Niri、Wofi、Mako、Kitty、Fcitx5、btop 则在构建时从 `.in` 模板渲染。换色时只编辑 `theme/colors.nix`，不要修改 Nix store 中的生成文件。
+
 mpvpaper 默认显示仓库自带的单张静态壁纸；私有配置模板为 `"enable": false`、`"path": ""`，不预设 MP4。要选择其他图片或 MP4，在 `private-config/wallpaper/settings.json` 中将 `enable` 设为 `true` 并设置 `path`。相对路径以 **private-config 根目录**为基准：`"path": "wallpaper/picture.jpg"` 对应 `private-config/wallpaper/picture.jpg`，`"path": "wallpaper/desktop.mp4"` 则选择该处的 MP4。也支持绝对路径，例如 `"path": "/home/<USER>/Videos/desktop.mp4"`；`~` 不会展开，相对路径不能包含 `..`。放在 private-config 且纳入 Git 的媒体会随 flake 输入进入 Nix store；仓库外的绝对路径只在运行时读取媒体，不会复制媒体文件。Niri 启动时若文件不存在，会退回自带静态图。通过 `./cli.py` 菜单的 `build-dev` / `switch-dev` 应用，之后重新登录。已有的 private-config 不会因 `private init` 自动获得新文件，需要从 `templates/private-config/wallpaper/settings.json` 手工补入；新增的私有配置和媒体文件在 `build-dev` 前都要加入私有仓库的 Git 索引，否则 Git-backed flake 不会收录。
 
 顶栏为 `assets/config/quickshell/marko-shell/` 中的 QuickShell 配置，安装到 `~/.config/quickshell/marko-shell`。
 
-Fcitx5 经典界面的候选窗默认使用 `assets/config/fcitx5/marko-shell/` 主题；Home Manager 还会将其链接到 `~/.local/share/fcitx5/themes/marko-shell/`，使未从整合包装器启动的 Fcitx 也能发现主题。主题以 Tokyo Night 配色和 SVG 圆角匹配顶栏。现有的 `~/.config/fcitx5/conf/classicui.conf` 优先于系统默认设置：在「Fcitx5 配置 → 附加组件 → 经典用户界面」中，为 Theme 选择「Marko Shell」（若跟随系统明暗配色，Dark Theme 也选它）。激活后若仍看不到主题，先注销并重新登录再检查。经典界面主题不能为候选窗添加动画，QuickShell 弹窗动画也不会作用于 Fcitx5。
+Fcitx5 经典界面的候选窗由 `assets/config/fcitx5/marko-shell/` 中的模板渲染，并默认启用；Home Manager 还会将其链接到 `~/.local/share/fcitx5/themes/marko-shell/`，使未从整合包装器启动的 Fcitx 也能发现主题。主题以 Tokyo Night 配色和 SVG 圆角匹配顶栏。现有的 `~/.config/fcitx5/conf/classicui.conf` 优先于系统默认设置：在「Fcitx5 配置 → 附加组件 → 经典用户界面」中，为 Theme 选择「Marko Shell」（若跟随系统明暗配色，Dark Theme 也选它）。激活后若仍看不到主题，先注销并重新登录再检查。经典界面主题不能为候选窗添加动画，QuickShell 弹窗动画也不会作用于 Fcitx5。
 Rime 输入法提供方案 `marko-input`：默认小鹤双拼；`Shift+U` 进入笔画与部件拆字，并可按类别取符号（`udw`、`uxh`、`uts`、`ubd`、`usx`、`ujh`、`uzm`）；`Shift+V` 输入中文数字、日期、时间与算式，以及 Unicode 码位（`UC`）和 GB18030 编码（`GB`）。关闭方式为 `programs.markoInput.enable = false;`。上游来源按 revision 固定，方案在构建期编译；激活过程不触碰用户 Rime 数据。切换系统后先注销并重新登录，再通过 Rime 菜单的「重新部署」更新用户编译缓存。详见 [Rime U/V 模式](docs/rime-uv_zh.md)。
 
 工作区用橙色圆点提示 urgency。Wi-Fi 行从 NetworkManager 的缓存扫描结果读取 BSSID，因此未连接的网络也会显示当前可见信号最强的 AP，并标出其余同名 AP 的数量。已连接行只有在扫描结果为该设备和 SSID 找到唯一活动 BSSID 时才显示活动地址。密码输入由顶栏自己的 NetworkManager 连接助手处理，点击 Connect 不会再打开第二个系统密码窗口。本配置不再安装旧 Waybar、bzmenu 和 networkmanager_dmenu。
@@ -44,6 +46,7 @@ config/qq-source.json      # QQ 固定版本与哈希
 desktop/                   # 系统桌面模块
 services/                  # 系统服务模块
 marko1616-home/            # 通用 Home Manager 模块
+theme/                     # 统一颜色与构建期渲染器
 assets/                    # dotfiles、壁纸、头像与插件子模块
 ```
 
