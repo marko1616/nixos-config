@@ -16,6 +16,8 @@ These are **active bindings in the checked-in configuration**, not a list of all
 | `Mod+Shift+P` | Power off monitors until the next input |
 | `Mod+Escape` | Toggle shortcut inhibition; escape hatch for remote-control applications |
 
+After locking, type the current desktop user's password and press `Enter` to unlock; use `Backspace` to correct a mistake. You can also run `swaylock` in a terminal inside the Niri session. The background, ring, text, and state colors come from the `swaylock` section of `theme/colors.nix`; when private-config color overrides are enabled, these roles can also be overridden in `private-config/theme/settings.json`.
+
 ## Niri: focus and move
 
 | Keys | Action |

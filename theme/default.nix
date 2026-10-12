@@ -1,8 +1,47 @@
-{ pkgs }:
+{ pkgs, inputs }:
 let
   lib = pkgs.lib;
-  colors = import ./colors.nix;
-  colorValues = lib.collect builtins.isString colors;
+  defaultColors = import ./colors.nix;
+  privateColorsFile = "${inputs.private-config}/theme/settings.json";
+  privateSettings =
+    if builtins.pathExists privateColorsFile then
+      builtins.fromJSON (builtins.readFile privateColorsFile)
+    else
+      { enable = false; colors = { }; };
+  validPalette = value:
+    if builtins.isString value then true
+    else if builtins.isList value then lib.all builtins.isString value
+    else if builtins.isAttrs value then
+      lib.all (name: validPalette value.${name}) (builtins.attrNames value)
+    else false;
+  validOverrides = path: base: overrides:
+    if builtins.isAttrs base && builtins.isAttrs overrides then
+      lib.all
+        (name:
+          if path == [ "neovim" ] && name == "palette" then
+            builtins.isAttrs overrides.palette && validPalette overrides.palette
+          else
+            builtins.hasAttr name base
+            && validOverrides (path ++ [ name ]) base.${name} overrides.${name})
+        (builtins.attrNames overrides)
+    else
+      builtins.isString base && builtins.isString overrides;
+  validSettings =
+    builtins.isAttrs privateSettings
+    && builtins.isBool (privateSettings.enable or null)
+    && builtins.isAttrs (privateSettings.colors or null)
+    && validOverrides [ ] defaultColors privateSettings.colors;
+  colors =
+    if validSettings && privateSettings.enable then
+      lib.recursiveUpdate defaultColors privateSettings.colors
+    else
+      defaultColors;
+  colorValues = value:
+    if builtins.isString value then [ value ]
+    else if builtins.isList value then lib.concatMap colorValues value
+    else if builtins.isAttrs value then
+      lib.concatMap (name: colorValues value.${name}) (builtins.attrNames value)
+    else [ ];
   validColor = value:
     value == "NONE"
     || value == "transparent"
@@ -132,7 +171,7 @@ let
     ] colors.fcitx5)} "$theme_dir/highlight.svg"
   '';
 
-  neovimPalette = {
+  neovimPalette = (colors.neovim.palette or { }) // {
     bg_statusline = colors.neovim.statuslineBackground;
   };
   neovimHighlights = {
@@ -178,8 +217,10 @@ let
     cp ${neovimColors} "$out/lua/theme/colors.lua"
   '';
 in
-assert lib.assertMsg (lib.all validColor colorValues)
-  "theme/colors.nix contains a value that is neither #RRGGBB, an eight-digit color, transparent, nor NONE";
+assert lib.assertMsg validSettings
+  "private-config/theme/settings.json must contain boolean enable and known string-valued color roles under colors";
+assert lib.assertMsg (lib.all validColor (colorValues colors))
+  "theme colors contain a value that is neither #RRGGBB, an eight-digit color, transparent, nor NONE";
 {
   inherit colors quickshell neovim fcitx5Theme;
   files = {

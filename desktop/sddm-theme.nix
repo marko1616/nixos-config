@@ -1,7 +1,7 @@
 { pkgs, inputs, colors }:
 let
   theme = inputs.pixie-sddm.packages.${pkgs.stdenv.hostPlatform.system}.pixie-sddm.override {
-    background = ../assets/login-background/65475029_p0.jpg;
+    background = "${../assets/login-background/65475029_p0.jpg}";
     autoColor = false;
     accentColor = colors.sddm.accent;
     backgroundColor = colors.sddm.background;

@@ -8,7 +8,7 @@ Niri 桌面与 Home Manager 配置，使用 Flake 固定依赖。真实主机配
 
 Niri、SDDM / Pixie、QuickShell（marko-shell 顶栏）、Wofi、Kitty、Mako，采用 Tokyo Night 配色。
 
-所有第一方颜色值只写在 `theme/colors.nix` 这一个文件中。即使当前颜色相同，不同应用和语义角色也保留独立字段，修改一个目标不会连带改变另一个。`theme/default.nix` 将颜色暴露给 Nix，并生成 QuickShell、Neovim 的颜色模块；仅有配置文件的 Niri、Wofi、Mako、Kitty、Fcitx5、btop 则在构建时从 `.in` 模板渲染。换色时只编辑 `theme/colors.nix`，不要修改 Nix store 中的生成文件。
+默认的 Tokyo Night 颜色保存在 `theme/colors.nix`，每个应用和语义角色都有独立字段。`theme/default.nix` 生成 QuickShell、Neovim 的颜色模块，并从 `.in` 模板渲染 Niri、Wofi、Mako、Kitty、Fcitx5、btop。要在不改公开默认值的情况下换色，从模板补入 `private-config/theme/settings.json`，将 `enable` 设为 `true`；`colors` 按 `theme/colors.nix` 的层级只覆盖需要修改的字段，例如 `"colors": {"quickshell": {"barBackground": "#28363B"}}`。未指定的字段沿用默认值；关闭开关或移除文件即可恢复。Neovim 另外支持高级字段 `colors.neovim.palette`，会转交 Tokyo Night。未知角色、非颜色值或无效颜色格式会导致求值失败。已有 private-config 需自行新增并暂存 `theme/settings.json`，`private init` 只在创建新目录时复制模板。通过 `./cli.py` 菜单的 `build-dev` / `switch-dev` 验证并激活，不要修改 Nix store 中的生成文件。
 
 mpvpaper 默认显示仓库自带的单张静态壁纸；私有配置模板为 `"enable": false`、`"path": ""`，不预设 MP4。要选择其他图片或 MP4，在 `private-config/wallpaper/settings.json` 中将 `enable` 设为 `true` 并设置 `path`。相对路径以 **private-config 根目录**为基准：`"path": "wallpaper/picture.jpg"` 对应 `private-config/wallpaper/picture.jpg`，`"path": "wallpaper/desktop.mp4"` 则选择该处的 MP4。也支持绝对路径，例如 `"path": "/home/<USER>/Videos/desktop.mp4"`；`~` 不会展开，相对路径不能包含 `..`。放在 private-config 且纳入 Git 的媒体会随 flake 输入进入 Nix store；仓库外的绝对路径只在运行时读取媒体，不会复制媒体文件。Niri 启动时若文件不存在，会退回自带静态图。通过 `./cli.py` 菜单的 `build-dev` / `switch-dev` 应用，之后重新登录。已有的 private-config 不会因 `private init` 自动获得新文件，需要从 `templates/private-config/wallpaper/settings.json` 手工补入；新增的私有配置和媒体文件在 `build-dev` 前都要加入私有仓库的 Git 索引，否则 Git-backed flake 不会收录。
 

@@ -106,6 +106,29 @@
     text = "#a9b1d6";
   };
 
+  swaylock = {
+    background = "#1a1b26";
+    inside = "#24283b";
+    insideClear = "#24283b";
+    insideVerifying = "#24283b";
+    insideWrong = "#24283b";
+    ring = "#565f89";
+    ringClear = "#7aa2f7";
+    ringVerifying = "#73daca";
+    ringWrong = "#f7768e";
+    line = "#1a1b26";
+    text = "#a9b1d6";
+    textClear = "#a9b1d6";
+    textVerifying = "#a9b1d6";
+    textWrong = "#f7768e";
+    keyHighlight = "#7aa2f7";
+    backspaceHighlight = "#e0af68";
+    separator = "#1a1b26";
+    layoutBackground = "#24283b";
+    layoutBorder = "#565f89";
+    layoutText = "#a9b1d6";
+  };
+
   niri = {
     focusRingActive = "#565f89";
     focusRingInactive = "#505050";

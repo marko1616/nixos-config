@@ -4,7 +4,7 @@
 
 { config, pkgs, inputs, ... }:
 let
-  markoTheme = import ./theme { inherit pkgs; };
+  markoTheme = import ./theme { inherit pkgs inputs; };
   sddm-theme = pkgs.callPackage ./desktop/sddm-theme.nix {
     inherit inputs;
     colors = markoTheme.colors;
