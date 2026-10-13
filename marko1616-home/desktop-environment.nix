@@ -36,7 +36,7 @@ let
       fi
       wallpaper="$default_wallpaper"
     fi
-    exec ${pkgs.mpvpaper}/bin/mpvpaper -o 'no-audio loop-file=inf image-display-duration=inf keepaspect=yes video-unscaled=no video-aspect-override=no video-zoom=0 video-scale-x=1 video-scale-y=1 panscan=1 video-align-x=0 video-align-y=0 video-pan-x=0 video-pan-y=0' ALL "$wallpaper"
+    exec ${pkgs.mpvpaper}/bin/mpvpaper -o 'no-audio hwdec=auto loop-file=inf image-display-duration=inf keepaspect=yes video-unscaled=no video-aspect-override=no video-zoom=0 video-scale-x=1 video-scale-y=1 panscan=1 video-align-x=0 video-align-y=0 video-pan-x=0 video-pan-y=0' ALL "$wallpaper"
   '';
 in
 {

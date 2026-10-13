@@ -137,7 +137,9 @@ QtObject {
         // Unset user means the current process user, not a QML/IPC-supplied name.
         onPamMessage: {
             if (!root.secure || root.authenticated) return;
-            root.status = message;
+            // The input field already identifies hidden responses as a password.
+            // Keep visible PAM prompts (for example, an OTP challenge) in the status area.
+            root.status = responseRequired && !responseVisible && !messageIsError ? "" : message;
             root.statusError = messageIsError;
             root.waiting = !responseRequired;
             root.clearInput();
