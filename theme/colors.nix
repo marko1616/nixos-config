@@ -84,6 +84,29 @@
     textButtonFocusBorder = "#7aa2f7";
   };
 
+  # Lock screen roles are independent of the desktop bar and popovers.
+  lockscreen = {
+    surfaceBackground = "#30364f";
+    overlay = "#30364f";
+    cardBackground = "#30364f";
+    cardBorder = "#7480a8";
+    error = "#f7768e";
+    clock = "#ff9e64";
+    secondaryText = "#565f89";
+    title = "#a9b1d6";
+    inputText = "#a9b1d6";
+    inputPlaceholder = "#565f89";
+    inputSelection = "#7aa2f7";
+    inputSelectedText = "#30364f";
+    inputFocusedBackground = "#414966";
+    inputUnfocusedBackground = "#16161e";
+    inputFocusBorder = "#7aa2f7";
+    buttonBackground = "#414966";
+    buttonPressedBackground = "#414966";
+    buttonText = "#7aa2f7";
+    buttonFocusBorder = "#7aa2f7";
+  };
+
   fcitx5 = {
     normalText = "#a9b1d6";
     highlightText = "#7aa2f7";
@@ -104,29 +127,6 @@
     accent = "#7aa2f7";
     background = "#1a1b26";
     text = "#a9b1d6";
-  };
-
-  swaylock = {
-    background = "#1a1b26";
-    inside = "#24283b";
-    insideClear = "#24283b";
-    insideVerifying = "#24283b";
-    insideWrong = "#24283b";
-    ring = "#565f89";
-    ringClear = "#7aa2f7";
-    ringVerifying = "#73daca";
-    ringWrong = "#f7768e";
-    line = "#1a1b26";
-    text = "#a9b1d6";
-    textClear = "#a9b1d6";
-    textVerifying = "#a9b1d6";
-    textWrong = "#f7768e";
-    keyHighlight = "#7aa2f7";
-    backspaceHighlight = "#e0af68";
-    separator = "#1a1b26";
-    layoutBackground = "#24283b";
-    layoutBorder = "#565f89";
-    layoutText = "#a9b1d6";
   };
 
   niri = {

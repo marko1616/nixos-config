@@ -14,6 +14,7 @@ in
   imports =
     [
       ./desktop/niri.nix
+      ./desktop/marko-lock.nix
       ./desktop/rime.nix
       ./desktop/sddm-avatars.nix
       ./services/ssh.nix

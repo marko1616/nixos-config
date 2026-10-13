@@ -21,6 +21,8 @@ The workspace indicator marks urgency with an orange dot. Wi-Fi rows read BSSIDs
 
 Interactive panels use a keyboard-capable transparent overlay. Its input mask lets pointer events reach the bar while observing movement and outside clicks below it. Leaving both the bar and panel for 500 ms starts a one-way exit animation; moving back after exit begins does not reverse it. Outside clicks are consumed and animate the close; Escape also closes the panel. The bar and panel share a brighter base color and a thin outline following their fused SDF contour. Adjust `popupLeaveDelay` in `Theme.qml` to change the delay. The borderless password field vertically centres its text, placeholder and caret. Tooltips remain non-interactive and do not take keyboard focus.
 
+The animated locker uses a separate QuickShell 0.3.2 instance with Qt Multimedia and the system PAM service. `Super+Alt+L` locks; it reuses the private wallpaper and motion tokens, with independent lockscreen colors in `theme/colors.nix` and optional `colors.lockscreen` private overrides. Stage new files, use the `build-dev` / `switch-dev` menu items in `./cli.py`, then log out/in; locking needs no sudo. The daemon starts on first use and remains resident after unlock. If secure acknowledgement does not arrive, the command reports failure rather than claiming success; Niri retains its locked background if an active locker exits abnormally. See [lockscreen architecture and acceptance](docs/lockscreen.md) for recovery. No idle/suspend policy is added. Video playback is independent of mpvpaper, so handoff can jump in phase.
+
 ## Tools
 
 Zsh / Oh My Zsh, Neovim, LLVM / Clang, Python, btop, QQ and optional public-key SSH.

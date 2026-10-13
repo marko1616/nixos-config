@@ -9,14 +9,14 @@ These are **active bindings in the checked-in configuration**, not a list of all
 | Keys | Action |
 | --- | --- |
 | `Mod+T` / `Mod+D` | Open Kitty / Wofi |
-| `Super+Alt+L` | Lock with swaylock |
+| `Super+Alt+L` | Lock with QuickShell |
 | `Mod+O` | Toggle overview |
 | `Mod+Q` | Close focused window |
 | `Mod+Shift+E` or `Ctrl+Alt+Delete` | Quit Niri, with confirmation |
 | `Mod+Shift+P` | Power off monitors until the next input |
 | `Mod+Escape` | Toggle shortcut inhibition; escape hatch for remote-control applications |
 
-After locking, type the current desktop user's password and press `Enter` to unlock; use `Backspace` to correct a mistake. You can also run `swaylock` in a terminal inside the Niri session. The background, ring, text, and state colors come from the `swaylock` section of `theme/colors.nix`; when private-config color overrides are enabled, these roles can also be overridden in `private-config/theme/settings.json`.
+After locking, enter the current user's password and press Enter. Escape clears input only. The QuickShell locker shares the bar colors and animation curves. See [lockscreen use and acceptance](lockscreen.md).
 
 ## Niri: focus and move
 

@@ -1,0 +1,6 @@
+singleton Theme 1.0 Theme.qml
+singleton Colors 1.0 Colors.qml
+singleton LockColors 1.0 LockColors.qml
+LockController 1.0 LockController.qml
+LockView 1.0 LockView.qml
+Wallpaper 1.0 Wallpaper.qml

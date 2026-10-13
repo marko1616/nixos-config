@@ -1,7 +1,6 @@
 { config, pkgs, ...}:
 {
   programs.niri.enable = true;
-  security.pam.services.swaylock = { };
 
   # Battery status and power-profile switching for the shell bar.
   services.upower.enable = true;

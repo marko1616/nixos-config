@@ -21,6 +21,8 @@ Rime 输入法提供方案 `marko-input`：默认小鹤双拼；`Shift+U` 进入
 
 可交互面板使用能接收键盘输入的透明覆盖层。输入区域遮罩让顶栏继续接收鼠标事件，同时观察顶栏下方的移动和外部点击。鼠标离开顶栏与面板 500 毫秒后开始单向退出动画；一旦开始，移回也不会倒放复原。外部点击会被消耗并播放退出动画，Esc 也会关闭面板。顶栏与面板共用提亮的底色，细描边沿融合后的 SDF 外轮廓绘制。延迟可在 `Theme.qml` 的 `popupLeaveDelay` 中调整。密码框保持无边框，文字、占位提示和光标垂直居中。提示框保持非交互，不抢占键盘焦点。
 
+动态锁屏使用独立 QuickShell 0.3.2 进程、Qt Multimedia 和系统 PAM 服务。`Super+Alt+L` 锁定；复用现有私有壁纸与动画参数，锁屏颜色独立定义在 `theme/colors.nix` 的 `lockscreen` 组，可通过私有配置的 `colors.lockscreen` 覆盖。新增文件先加入 Git 索引，通过 `./cli.py` 菜单的 `build-dev` / `switch-dev` 构建切换，再注销并重新登录；锁屏命令本身无需 sudo。首次使用启动守护进程，解锁后常驻。启动未获安全确认时命令会报错，不会假称已锁定；已锁定后异常退出时 Niri 保持锁定背景，恢复操作见[锁屏架构与验收](docs/lockscreen_zh.md)。不新增闲置／休眠策略；视频与 mpvpaper 独立播放，切换可能出现相位跳变。
+
 ## 工具
 
 Zsh / Oh My Zsh、Neovim、LLVM / Clang、Python、btop、QQ、可选的公钥 SSH。

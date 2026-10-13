@@ -139,6 +139,18 @@ let
     }
   '';
 
+  lockscreenColors = pkgs.writeText "LockColors.qml" ''
+    pragma Singleton
+    import QtQuick
+
+    // Generated from colors.lockscreen. Do not edit in the deployed tree.
+    QtObject {
+      ${lib.concatStringsSep "\n" (lib.mapAttrsToList
+        (name: value: "readonly property color ${name}: \"${value}\"")
+        colors.lockscreen)}
+    }
+  '';
+
   quickshell = pkgs.runCommandLocal "marko-shell" {
     nativeBuildInputs = [ pkgs.qt6.qtshadertools ];
   } ''
@@ -222,7 +234,7 @@ assert lib.assertMsg validSettings
 assert lib.assertMsg (lib.all validColor (colorValues colors))
   "theme colors contain a value that is neither #RRGGBB, an eight-digit color, transparent, nor NONE";
 {
-  inherit colors quickshell neovim fcitx5Theme;
+  inherit colors quickshell quickshellColors lockscreenColors neovim fcitx5Theme;
   files = {
     niri = render ../assets/config/niri/config.kdl.in (colors.niri // {
       # cli.py fills these runtime placeholders after the Nix build.

@@ -9,14 +9,14 @@
 | 按键 | 操作 |
 | --- | --- |
 | `Mod+T` / `Mod+D` | 打开 Kitty / Wofi |
-| `Super+Alt+L` | 使用 swaylock 锁屏 |
+| `Super+Alt+L` | QuickShell 锁屏 |
 | `Mod+O` | 切换概览 |
 | `Mod+Q` | 关闭当前窗口 |
 | `Mod+Shift+E` 或 `Ctrl+Alt+Delete` | 退出 Niri，需确认 |
 | `Mod+Shift+P` | 关闭显示器，直到下一次输入 |
 | `Mod+Escape` | 切换快捷键抑制；远程控制程序失灵时的退出通道 |
 
-锁屏后直接输入当前桌面用户的密码并按 `Enter` 解锁；输错时可用 `Backspace` 修改。也可以在 Niri 会话的终端运行 `swaylock`。锁屏界面的背景、圆环、文字和状态色由 `theme/colors.nix` 的 `swaylock` 字段控制；若启用了 private-config 的配色覆盖，也可在 `private-config/theme/settings.json` 覆盖这些字段。
+锁屏后输入当前用户密码并按 Enter。Escape 只清空输入。QuickShell 锁屏共享顶栏配色和动画曲线。详见[锁屏使用与验收](lockscreen_zh.md)。
 
 ## Niri：焦点与移动
 

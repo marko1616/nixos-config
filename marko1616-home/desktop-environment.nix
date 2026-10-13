@@ -47,6 +47,7 @@ in
     }
   ];
   home.packages = [ wallpaperLauncher ];
+  programs.markoLock.wallpaperPath = configuredWallpaper;
   xdg.dataFile."wallpapers/desktop.jpg".source =
     ../assets/wallpapers/148557481_p1.jpg;
   # Fcitx also looks in the user's XDG data directory. Keep the theme visible
