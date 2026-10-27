@@ -10,8 +10,8 @@ QtObject {
     property string phase: "idle"
     // 0..1: zoom out, 1..2: scroll, 2..3: zoom in.
     property real reveal: 0
-    readonly property int entryDuration: 780
-    readonly property int exitDuration: 690
+    readonly property int entryDuration: 450
+    readonly property int exitDuration: 390
     property string status: ""
     property bool statusError: false
     property bool waiting: false
